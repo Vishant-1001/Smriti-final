@@ -1,6 +1,6 @@
-// SMRITI Fit: explicit-needs presentation solver (docs/flagship/FIT_SPEC.md).
-// Pure Kotlin on the JVM: no Android, Compose or network. The benchmark measures text with the
-// app's own bundled fonts (java.awt, headless) and real strings from app/src/main/res.
+// SMRITI Fit benchmark harness (docs/flagship/FIT_PROTOCOL_v2.md). JVM only, never part of the app.
+// Measures text with the app's own bundled fonts (java.awt, headless) and real strings from
+// app/src/main/res, and compares the solver with the current rules (B1) and greedy repair (B2).
 plugins {
     alias(libs.plugins.kotlin.jvm)
 }
@@ -10,6 +10,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":fit"))
     testImplementation(libs.junit)
 }
 

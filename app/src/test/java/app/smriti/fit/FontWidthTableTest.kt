@@ -8,6 +8,7 @@ import app.smriti.R
 import app.smriti.fit.sim.AwtMeasurer
 import app.smriti.fit.sim.Content
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
@@ -18,7 +19,7 @@ import java.util.Locale
 /**
  * Measures every SMRITI string and every word in it with Android's own text stack (Paint/minikin
  * with HarfBuzz, Robolectric native graphics) using the app's bundled bold fonts. It writes:
- *  - fit/src/main/resources/app/smriti/fit/android_widths.tsv: width in em per (language, text);
+ *  - fit-bench/src/main/resources/app/smriti/fit/android_widths.tsv: width in em per (language, text);
  *  - docs/flagship/FIT_FONT_CHECK.md: how far the JVM (AWT) measurement is from Android's.
  *
  * Run: ./gradlew :app:testDebugUnitTest --tests app.smriti.fit.FontWidthTableTest
@@ -29,6 +30,8 @@ import java.util.Locale
 class FontWidthTableTest {
     @Test
     fun measureAllStrings() {
+        // Writes committed result files; runs only when asked: -Dfit.validation=true
+        assumeTrue(System.getProperty("fit.validation") == "true")
         val ctx = ApplicationProvider.getApplicationContext<android.content.Context>()
         val res = File("src/main/res")
         val content = Content(res)
@@ -51,7 +54,7 @@ class FontWidthTableTest {
                 if (android > 0.3) ratios.getValue(lang) += a / android
             }
         }
-        val out = File("../fit/src/main/resources/app/smriti/fit/android_widths.tsv")
+        val out = File("../fit-bench/src/main/resources/app/smriti/fit/android_widths.tsv")
         out.parentFile.mkdirs()
         out.writeText(
             "# Width in em of each SMRITI string and word, measured with Android Paint (Robolectric native graphics, SDK 34)\n" +
@@ -70,7 +73,7 @@ class FontWidthTableTest {
                 appendLine("| $lang | ${l.size} | ${f(q(l, 0.5))} | ${f(q(l, 0.05))} | ${f(q(l, 0.95))} | ${f(l.min())} | ${f(l.max())} |")
             }
             appendLine()
-            appendLine("The table of Android widths is written to `fit/src/main/resources/app/smriti/fit/android_widths.tsv`.")
+            appendLine("The table of Android widths is written to `fit-bench/src/main/resources/app/smriti/fit/android_widths.tsv`.")
         }
         File("../docs/flagship/FIT_FONT_CHECK.md").writeText(report)
         println(report)

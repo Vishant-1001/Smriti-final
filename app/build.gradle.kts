@@ -45,7 +45,7 @@ android {
                 it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
                 // FitValidationTest measures text with java.awt (the :fit model's measurer).
                 it.systemProperty("java.awt.headless", "true")
-                for (k in listOf("fit.capture", "fit.seeds", "fit.out")) System.getProperty(k)?.let { v -> it.systemProperty(k, v) }
+                for (k in listOf("fit.validation", "fit.capture", "fit.seeds", "fit.out", "fit.v6out")) System.getProperty(k)?.let { v -> it.systemProperty(k, v) }
             }
         }
     }
@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+    // SMRITI Fit core (pure Kotlin): chooses the radio screen's layout from explicit needs, behind FitFlags.
+    implementation(project(":fit"))
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
@@ -91,7 +93,7 @@ dependencies {
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.androidx.test.junit)
     // Test-only: validates the :fit geometry model against real Compose rendering (FIT_PROTOCOL.md F5).
-    testImplementation(project(":fit"))
+    testImplementation(project(":fit-bench"))
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)

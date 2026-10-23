@@ -133,3 +133,24 @@ Screenshots are in `docs/screenshots/emulator/`. The `q*` files are portrait Pas
 ./gradlew :scope:runScopeV2Test     # fresh seeds 2001–2060 → v2 verdict: NO-GO
 ```
 
+## SMRITI Fit (flagship alternative; added later)
+
+Commands and results from this run (2026-10-24):
+
+```
+./gradlew :scope:test                      # 31 passed (SCOPE unchanged)
+./gradlew :scope:reproduceScopeV1          # v1 results identical apart from the runtime line
+./gradlew :fit:test                        # 17 passed (FitSolverTest)
+./gradlew :fit-bench:test                  # 4 passed (RealFontsTest: bundled fonts, reproducibility, content split)
+./gradlew :app:testDebugUnitTest           # 218 run, 213 passed, 5 skipped (heavy Fit validation, opt-in), 0 failed
+./gradlew :app:verifyRoborazziDebug        # all existing screenshots unchanged (Fit is off by default)
+./gradlew :app:assembleDebug               # builds; APK contains the :fit core only (no AWT / benchmark code)
+./gradlew :fit-bench:runFitEval            # protocol v2: F1–F4 PASS (docs/flagship/FIT_EVAL_RESULTS_v2.md)
+./gradlew :app:testDebugUnitTest --tests "app.smriti.fit.*" -Dfit.validation=true
+                                           # F5 96.5% PASS (FIT_VALIDATION_v2.md); V6 53→13 problems,
+                                           # 4 instances worse → Fit stays off by default (FIT_V6_REAL_RENDER.md)
+```
+
+- **Protocol v1 (kept):** F5 failed (84.5%; `docs/flagship/FIT_VALIDATION.md`), so the verdict was NO-GO.
+- **Not run in this pass:** the 4 instrumented emulator tests, and any device capture. All renders above are Robolectric JVM renders.
+

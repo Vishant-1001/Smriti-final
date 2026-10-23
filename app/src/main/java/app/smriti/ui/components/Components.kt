@@ -166,6 +166,7 @@ fun HudButton(
     icon: ImageVector,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    followTextSize: Boolean = false,
 ) {
     Surface(
         onClick = onClick,
@@ -182,9 +183,11 @@ fun HudButton(
         ) {
             Icon(icon, contentDescription = null, tint = SmritiColors.Ink, modifier = Modifier.size(28.dp))
             // HUD labels follow the system font scale but not the in-app multiplier, so the
-            // always-visible controls still fit beside each other on small phones.
+            // always-visible controls still fit beside each other on small phones. SMRITI Fit may
+            // let them follow the in-app size where it has checked that they still fit.
             val d = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(d.density, minOf(d.fontScale, LocalSystemFontScale.current))) {
+            val scale = if (followTextSize) d.fontScale else minOf(d.fontScale, LocalSystemFontScale.current)
+            CompositionLocalProvider(LocalDensity provides Density(d.density, scale)) {
                 Text(label, style = MaterialTheme.typography.labelMedium, color = SmritiColors.Ink, textAlign = TextAlign.Center, maxLines = 2)
             }
         }

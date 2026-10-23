@@ -93,6 +93,14 @@ import app.smriti.ui.screens.TitleScreen
 import app.smriti.ui.screens.trackTitle
 import app.smriti.ui.theme.SmritiColors
 import app.smriti.ui.theme.SmritiTheme
+import app.smriti.ui.theme.LocalSystemFontScale
+import app.smriti.ui.fit.FitFlags
+import app.smriti.ui.fit.rememberRadioFit
+import app.smriti.ui.screens.RadioLayout
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.Density
 
 @Composable
 fun SmritiRoot(vm: GameViewModel, layouts: SceneLayoutSource, media: MediaStorage) {
@@ -140,6 +148,17 @@ private fun GameScreen(
     // testTagsAsResourceId lets UI Automator (and instrumented tests) find controls by stable tag.
     BoxWithConstraints(Modifier.fillMaxSize().background(SmritiColors.Cream).semantics { testTagsAsResourceId = true }) {
         val narrow = maxWidth < 600.dp
+        // SMRITI Fit (radio only, behind FitFlags): layout chosen from explicit settings and window size.
+        val radioFit = if (FitFlags.radioEnabled && state.scene == SceneId.RADIO) {
+            rememberRadioFit(state.settings, maxWidth, maxHeight, state.playlist.firstOrNull { it.id == state.radio.selectedTrackId }?.let { trackTitle(it) })
+        } else null
+        var fitHudHeight by remember { mutableStateOf<androidx.compose.ui.unit.Dp?>(null) }
+        // If Fit chose a smaller text level than the setting (only when the asked size cannot fit),
+        // the radio screen and its top bar are drawn at that level.
+        val fitDensity = radioFit?.config?.let { c ->
+            val d = LocalDensity.current
+            Density(d.density, LocalSystemFontScale.current * c.textLevel.scale.toFloat())
+        }
         Crossfade(targetState = state.scene, animationSpec = if (reduced) snap() else tween(350), label = "scene") { scene ->
             when {
                 scene == SceneId.TITLE -> TitleScreen(onAction)
@@ -153,18 +172,26 @@ private fun GameScreen(
                     SceneCorners(state, onAction, vm, guideOnRight)
                 }
                 else -> Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-                    Spacer(Modifier.padding(top = if (narrow) 168.dp else 90.dp))
+                    val reserved = if (radioFit != null && scene == SceneId.RADIO) {
+                        fitHudHeight ?: if (narrow) 168.dp else 90.dp
+                    } else if (narrow) 168.dp else 90.dp
+                    Spacer(Modifier.padding(top = reserved))
                     Box(Modifier.weight(1f).padding(bottom = if (state.radio.status != PlaybackStatus.STOPPED && scene != SceneId.RADIO) 86.dp else 12.dp)) {
                         when (scene) {
                             SceneId.MEMORY_BOOK -> MemoryBookScreen(
                                 state.memoryBook, media::photoFile, vm::memoryPrevious, vm::memoryNext, vm::readMemoryPageAloud,
                                 Modifier.testTag("scene_memory_book"),
                             )
-                            SceneId.RADIO -> RadioScreen(
-                                state.playlist, state.radio, state.settings.musicVolume, state.settings.musicMuted, vm::onRadio,
-                                { v -> vm.updateSettings { it.copy(musicVolume = v) } },
-                                Modifier.testTag("scene_radio"),
-                            )
+                            SceneId.RADIO -> WithDensity(fitDensity) {
+                                RadioScreen(
+                                    state.playlist, state.radio, state.settings.musicVolume, state.settings.musicMuted, vm::onRadio,
+                                    { v -> vm.updateSettings { it.copy(musicVolume = v) } },
+                                    Modifier.testTag("scene_radio"),
+                                    fit = radioFit?.config?.let {
+                                        RadioLayout(it.columns, it.style == app.smriti.fit.ButtonStyle.STACKED, it.illustration, it.landscapeSplit)
+                                    },
+                                )
+                            }
                             SceneId.CAREGIVER -> CaregiverScreen(state.memoryBook, state.playlist, caregiverActions, Modifier.testTag("scene_caregiver"))
                             SceneId.COOKING -> CookingScreen(
                                 state.cooking, state.helpers.highlight, vm::cook, vm::cookRepeat, vm::cookShowMe, vm::cookDoStep, vm::cookUndo, vm::cookReset,
@@ -189,7 +216,9 @@ private fun GameScreen(
         }
 
         if (state.scene != SceneId.TITLE) {
-            TopBar(state, onAction, guideInBar = !state.scene.isIllustratedScene)
+            WithDensity(fitDensity) {
+                TopBar(state, onAction, guideInBar = !state.scene.isIllustratedScene, fit = radioFit?.config, onHeight = { fitHudHeight = it })
+            }
         }
         if (state.radio.status != PlaybackStatus.STOPPED && !state.scene.isIllustratedScene && state.scene != SceneId.RADIO) {
             MiniPlayer(state, vm, Modifier.align(Alignment.BottomEnd).safeDrawingPadding().padding(16.dp))
@@ -295,10 +324,29 @@ private fun sceneName(scene: SceneId): String = stringResource(
  * Back / Home on the left, where-am-I in the middle, End / Settings on the right. Never covered by
  * activities. On narrow screens the scene name moves to its own row so no control is squeezed.
  */
+/** Draws [content] with [density] when given (Fit's text level), otherwise unchanged. */
 @Composable
-private fun TopBar(state: GameUiState, onAction: (GameAction) -> Unit, guideInBar: Boolean) {
+private fun WithDensity(density: Density?, content: @Composable () -> Unit) {
+    if (density == null) content() else CompositionLocalProvider(LocalDensity provides density, content = content)
+}
+
+@Composable
+private fun TopBar(
+    state: GameUiState,
+    onAction: (GameAction) -> Unit,
+    guideInBar: Boolean,
+    fit: app.smriti.fit.Config? = null,
+    onHeight: (androidx.compose.ui.unit.Dp) -> Unit = {},
+) {
+    val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth().safeDrawingPadding().padding(horizontal = 12.dp, vertical = 8.dp)) {
-        val narrow = maxWidth < 600.dp
+        // With SMRITI Fit the number of rows, the label size and the button width cap are chosen
+        // by the solver; otherwise the fixed 600 dp threshold applies.
+        val narrow = fit?.let { it.hudRows >= 2 } ?: (maxWidth < 600.dp)
+        val ownRowForName = fit?.hudRows == 3
+        val follow = fit?.hudFollowsTextSize ?: false
+        val cap = if (fit?.hudWideButtons == true) 220.dp else 150.dp
+        val capWide = if (fit?.hudWideButtons == true) 220.dp else 170.dp
         val name: @Composable (Modifier) -> Unit = { m ->
             Box(m, contentAlignment = Alignment.Center) {
                 Text(
@@ -318,13 +366,13 @@ private fun TopBar(state: GameUiState, onAction: (GameAction) -> Unit, guideInBa
         }
         // Hints are one tap away in every stall; they open the list with the hint choices.
         val hintButton: @Composable () -> Unit = {
-            HudButton(stringResource(R.string.hud_hint), SmritiIcons.Help, { onAction(GameAction.OpenShopping) }, Modifier.widthIn(max = 150.dp).testTag("hud_hint"))
+            HudButton(stringResource(R.string.hud_hint), SmritiIcons.Help, { onAction(GameAction.OpenShopping) }, Modifier.widthIn(max = cap).testTag("hud_hint"), follow)
         }
         val endButton: @Composable () -> Unit = {
-            HudButton(stringResource(R.string.action_end_session), SmritiIcons.Exit, { onAction(GameAction.EndSession) }, Modifier.widthIn(max = 170.dp).testTag("hud_end"))
+            HudButton(stringResource(R.string.action_end_session), SmritiIcons.Exit, { onAction(GameAction.EndSession) }, Modifier.widthIn(max = capWide).testTag("hud_end"), follow)
         }
         val guide: @Composable () -> Unit = {
-            HudButton(stringResource(R.string.action_guide), SmritiIcons.Help, { onAction(GameAction.OpenGuide) }, Modifier.widthIn(max = 170.dp).testTag("hud_guide"))
+            HudButton(stringResource(R.string.action_guide), SmritiIcons.Help, { onAction(GameAction.OpenGuide) }, Modifier.widthIn(max = capWide).testTag("hud_guide"), follow)
         }
         // Context buttons for this place. On narrow screens they share the second row with the
         // place name, so the first row (Back, Home, Settings) can never be pushed off screen.
@@ -336,28 +384,35 @@ private fun TopBar(state: GameUiState, onAction: (GameAction) -> Unit, guideInBa
             if (state.scene == SceneId.MARKET) {
                 HudButton(
                     stringResource(R.string.market_go_home), SmritiIcons.Home,
-                    { onAction(GameAction.PlanTrip(TripDirection.TO_HOME)) }, Modifier.widthIn(max = 150.dp).testTag("market_go_home"),
+                    { onAction(GameAction.PlanTrip(TripDirection.TO_HOME)) }, Modifier.widthIn(max = cap).testTag("market_go_home"), follow,
                 )
             }
             if (showList) {
                 HudButton(
                     stringResource(R.string.hud_list) + " ${state.shopping.collectedCount}/${state.shopping.list.size}",
-                    SmritiIcons.List, { onAction(GameAction.OpenShopping) }, Modifier.widthIn(max = 150.dp).testTag("hud_list"),
+                    SmritiIcons.List, { onAction(GameAction.OpenShopping) }, Modifier.widthIn(max = cap).testTag("hud_list"), follow,
                 )
             }
         }
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            // Fit reserves exactly the space the top bar takes (plus its 8 dp padding above and below).
+            modifier = Modifier.onSizeChanged { with(density) { onHeight(it.height.toDp() + 16.dp) } },
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                HudButton(stringResource(R.string.action_back), SmritiIcons.Back, { onAction(GameAction.Back) }, Modifier.widthIn(max = 150.dp).testTag("hud_back"))
+                HudButton(stringResource(R.string.action_back), SmritiIcons.Back, { onAction(GameAction.Back) }, Modifier.widthIn(max = cap).testTag("hud_back"), follow)
                 val home = SceneNavigator.homeFor(state.nav)
                 if (state.scene != home && state.scene.isInsideHouse) {
-                    HudButton(stringResource(R.string.action_home), SmritiIcons.Home, { onAction(GameAction.Home) }, Modifier.widthIn(max = 150.dp).testTag("hud_home"))
+                    HudButton(stringResource(R.string.action_home), SmritiIcons.Home, { onAction(GameAction.Home) }, Modifier.widthIn(max = cap).testTag("hud_home"), follow)
                 }
                 if (narrow) Spacer(Modifier.weight(1f)) else name(Modifier.weight(1f))
                 if (!narrow) extras()
-                HudButton(stringResource(R.string.action_settings), SmritiIcons.Settings, { onAction(GameAction.OpenSettings) }, Modifier.widthIn(max = 170.dp).testTag("hud_settings"))
+                HudButton(stringResource(R.string.action_settings), SmritiIcons.Settings, { onAction(GameAction.OpenSettings) }, Modifier.widthIn(max = capWide).testTag("hud_settings"), follow)
             }
-            if (narrow) {
+            if (narrow && ownRowForName) {
+                Row(verticalAlignment = Alignment.CenterVertically) { name(Modifier.weight(1f)) }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) { extras() }
+            } else if (narrow) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     name(Modifier.weight(1f))
                     extras()

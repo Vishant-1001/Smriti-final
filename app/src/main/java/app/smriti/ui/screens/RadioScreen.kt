@@ -53,6 +53,9 @@ fun trackTitle(track: RadioTrack): String = when (track.id) {
     else -> track.title
 }
 
+/** A radio layout chosen by SMRITI Fit; `null` keeps the fixed width thresholds below. */
+data class RadioLayout(val columns: Int, val stacked: Boolean, val picture: Boolean, val landscapeSplit: Boolean)
+
 /**
  * The bedroom radio. Nothing plays until a song is chosen; Stop is always visible and stops at
  * once; "Not now" sets a song aside for this listening session only.
@@ -66,12 +69,14 @@ fun RadioScreen(
     onEvent: (RadioSession.Event) -> Unit,
     onVolume: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    fit: RadioLayout? = null,
 ) {
     BoxWithConstraints(modifier.fillMaxSize().background(SmritiColors.Cream)) {
-        val landscape = maxWidth > maxHeight
-        val stacked = maxWidth < 600.dp || (landscape && maxWidth < 900.dp)
+        val landscape = maxWidth > maxHeight && (fit?.landscapeSplit ?: true)
+        val stacked = fit?.stacked ?: (maxWidth < 600.dp || (landscape && maxWidth < 900.dp))
         // Very narrow phones: one control per line so long Tamil words never break.
         val veryNarrow = maxWidth < 380.dp
+        val showPicture = fit?.picture ?: true
         val available = session.available(playlist)
         val selected = playlist.firstOrNull { it.id == session.selectedTrackId }
         val picture: @Composable (Modifier) -> Unit = { m ->
@@ -95,21 +100,37 @@ fun RadioScreen(
                     Text(stringResource(R.string.radio_unavailable), style = MaterialTheme.typography.bodyMedium, color = SmritiColors.InkSoft, modifier = Modifier.testTag("radio_unavailable"))
                 }
                 Spacer(Modifier.size(12.dp))
-                ControlRow(veryNarrow) { itemModifier ->
+                val playPause: @Composable (Modifier) -> Unit = { itemModifier ->
                     if (session.status == PlaybackStatus.PLAYING) {
                         BigButton(stringResource(R.string.radio_pause), { onEvent(RadioSession.Event.Pause) }, itemModifier.testTag("radio_pause"), SmritiIcons.Pause, color = SmritiColors.Leaf, stacked = stacked)
                     } else {
                         BigButton(stringResource(R.string.radio_play), { onEvent(RadioSession.Event.Play) }, itemModifier.testTag("radio_play"), SmritiIcons.Play, color = SmritiColors.Leaf, enabled = available.isNotEmpty(), stacked = stacked)
                     }
+                }
+                val stop: @Composable (Modifier) -> Unit = { itemModifier ->
                     BigButton(stringResource(R.string.radio_stop), { onEvent(RadioSession.Event.Stop) }, itemModifier.testTag("radio_stop"), SmritiIcons.Stop, stacked = stacked)
                 }
-                ControlRow(veryNarrow) { itemModifier ->
+                val next: @Composable (Modifier) -> Unit = { itemModifier ->
                     QuietButton(stringResource(R.string.radio_next), { onEvent(RadioSession.Event.Next) }, itemModifier.testTag("radio_next"), SmritiIcons.SkipNext, enabled = available.size > 1, stacked = stacked)
+                }
+                val notNow: @Composable (Modifier) -> Unit = { itemModifier ->
                     QuietButton(
                         stringResource(R.string.radio_not_now),
                         { selected?.let { onEvent(RadioSession.Event.SkipForSession(it.id)) } },
                         itemModifier.testTag("radio_not_now"), SmritiIcons.NotNow, enabled = selected != null, stacked = stacked,
                     )
+                }
+                if (fit == null) {
+                    ControlRow(veryNarrow) { itemModifier -> playPause(itemModifier); stop(itemModifier) }
+                    ControlRow(veryNarrow) { itemModifier -> next(itemModifier); notNow(itemModifier) }
+                } else {
+                    // Fit's column count: rows of equal-width buttons, in the same order.
+                    listOf(playPause, stop, next, notNow).chunked(fit.columns.coerceIn(1, 4)).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+                            row.forEach { it(Modifier.weight(1f)) }
+                            repeat(fit.columns - row.size) { Spacer(Modifier.weight(1f)) }
+                        }
+                    }
                 }
                 VolumeRow(stringResource(R.string.radio_volume), musicVolume, !musicMuted, "radio_volume", onVolume)
             }
@@ -125,14 +146,14 @@ fun RadioScreen(
         if (landscape) {
             Row(Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 Column(Modifier.weight(1f).fillMaxHeight()) {
-                    picture(Modifier.weight(1f).fillMaxWidth())
+                    if (showPicture) picture(Modifier.weight(1f).fillMaxWidth())
                     controls(Modifier.fillMaxWidth())
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) { list() }
             }
         } else {
             Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                picture(Modifier.fillMaxWidth().heightIn(max = 220.dp).padding(horizontal = 40.dp))
+                if (showPicture) picture(Modifier.fillMaxWidth().heightIn(max = 220.dp).padding(horizontal = 40.dp))
                 controls(Modifier.fillMaxWidth())
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) { list() }
             }

@@ -1,6 +1,11 @@
-# SMRITI Fit: design specification (v1)
+# SMRITI Fit: design specification
 
-**Status: research prototype.** It is a pure-Kotlin module (`:fit`) that the app does not use unless a later integration step enables it. It makes no clinical claim. It uses no behavioural data and no learning.
+**Status: research prototype.**
+- The core is the pure-Kotlin module `:fit`. The JVM benchmark harness is `:fit-bench`.
+- The app uses the core on the radio screen only, behind `FitFlags.radioEnabled`, which is **off by default** (see `README.md` §2).
+- It makes no clinical claim, and it uses no behavioural data and no learning.
+
+*Revision note:* §3 was updated for protocol v2 (non-linear font scaling) and lists the model errors found by validation. The rest is unchanged from v1.
 
 ## 1. Problem
 
@@ -77,10 +82,10 @@ The space is small enough to search exhaustively, so the result is optimal under
 ## 3. Geometry model (what is real and what is assumed)
 
 **Real:**
-- the bundled bold Noto Sans and Noto Sans Tamil fonts, measured with AWT `TextLayout`, which uses HarfBuzz shaping and falls back to the Latin font for runs the Tamil font lacks;
+- the bundled bold Noto Sans and Noto Sans Tamil fonts, measured with AWT `TextLayout`, which uses HarfBuzz shaping and falls back to the Latin font for runs the Tamil font lacks. It agrees with Android `Paint` within ±1% (`FIT_FONT_CHECK.md`). In the app, Compose's own `TextMeasurer` is used;
 - the 282 English and 282 Tamil strings in `strings.xml`;
 - the padding, sizes and type scale copied from `Components.kt`, `SmritiRoot.kt`, `RadioScreen.kt` and `Theme.kt` (constants in `Dims`);
-- linear font scaling, as the app builds `Density(density, fontScale × textSize)` by hand.
+- **font scaling as Compose actually does it** (v2): on API 34+ it is non-linear for total scales up to 2.0 and linear above. The table was recorded from Compose on SDK 34 (`fit/src/main/resources/app/smriti/fit/font_scale_sdk34.tsv`). Before API 34 it is linear. *(v1 wrongly assumed linear scaling everywhere.)*
 
 **Assumed:**
 - system bars take 48 dp (0 in Robolectric validation);
@@ -88,7 +93,13 @@ The space is small enough to search exhaustively, so the result is optimal under
 - greedy word wrapping at spaces;
 - generated "new activity" panels reuse the radio layout convention.
 
-The model's agreement with real Compose rendering is checked separately (`FIT_PROTOCOL.md` F5).
+The model's agreement with real Compose rendering is checked separately (`FIT_PROTOCOL_v2.md` F5: 96.5% on 100 fresh instances).
+
+**Known model errors**, all found by real-render validation:
+- **Portrait picture height.** The app always reserves 220 dp, but the model computes `min(220, (w − 112) × 0.75)`. It underestimates by up to 34 dp below about 405 dp width. This is the diagnosed cause of the V6 instances where Fit was worse. **Not yet fixed**, because fixing it needs a new protocol.
+- **B1 port, top bar.** The app's top bar uses `maxWidth − 24 dp < 600` for two rows, while content reservation uses the window width. B1 uses the window width for both, so B1 looks *better* in the model than in reality at 600–623 dp.
+- **B1 port, radio landscape.** The radio screen decides landscape from its own box below the top bar. B1 uses the window aspect, so again B1 looks better than reality for near-square windows.
+- **HUD predictions are conservative.** The model uses a 150 dp width cap for all top-bar buttons; the app uses 170 dp for Settings and Guide. This causes some false "Settings label" predictions.
 
 ## 4. Why this addresses SCOPE's failures
 
@@ -109,14 +120,29 @@ The model's agreement with real Compose rendering is checked separately (`FIT_PR
 
 ## 6. Files
 
+**Core, `:fit`** (shipped in the app):
 - `fit/src/main/kotlin/app/smriti/fit/`:
   - `Model.kt` (types)
-  - `Layout.kt` (measurer, geometry model)
+  - `Layout.kt` (`TextMeasurer`, `FontScaling`, geometry model)
   - `Solver.kt` (solver, explanations)
   - `Baselines.kt` (B1 current rules, B2 greedy repair)
   - `FitState.kt` (persistence and replay)
-- `fit/src/main/kotlin/app/smriti/fit/sim/`:
+- `fit/src/main/resources/app/smriti/fit/font_scale_sdk34.tsv`
+- `fit/src/test/kotlin/app/smriti/fit/FitSolverTest.kt`
+
+**Benchmark, `:fit-bench`** (JVM only):
+- `fit-bench/src/main/kotlin/app/smriti/fit/sim/`:
   - `Content.kt` (AWT measurer, strings, real screens, content split)
   - `Instances.kt` (seeded generator)
   - `FitBenchmark.kt` (benchmark, bootstrap, gates, demo)
-- `fit/src/test/kotlin/app/smriti/fit/`: `FitSolverTest.kt`, `RealFontsTest.kt`
+- `fit-bench/src/test/kotlin/app/smriti/fit/RealFontsTest.kt`
+
+**App:**
+- `app/src/main/java/app/smriti/ui/fit/RadioFit.kt`: `FitFlags`, the Compose text measurer, and the radio screen template
+- `RadioScreen.kt` (`RadioLayout`), `SmritiRoot.kt` (top bar and reservation) and `Components.kt` (`HudButton.followTextSize`): used only when Fit is on
+
+**App validation tests** (Robolectric):
+- `app/src/test/java/app/smriti/fit/FitValidationTest.kt`: F5, V6, demo screenshots
+- `FontWidthTableTest.kt` and `FontScaleTableTest.kt`
+
+The heavy tests run only with `-Dfit.validation=true`.

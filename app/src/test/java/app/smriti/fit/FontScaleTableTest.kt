@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
@@ -22,6 +23,8 @@ import java.util.Locale
 class FontScaleTableTest {
     @Test
     fun recordConversion() {
+        // Writes committed result files; runs only when asked: -Dfit.validation=true
+        assumeTrue(System.getProperty("fit.validation") == "true")
         val system = listOf(0.85, 1.0, 1.15, 1.3, 1.5, 1.8, 2.0)
         val levels = listOf(1.0, 1.2, 1.4)
         val sizes = listOf(15, 17, 18, 19, 22, 26, 28, 32)

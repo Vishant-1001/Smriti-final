@@ -42,6 +42,15 @@ Every area below can be reached and completed through the real UI. Each one was 
 
 `scope/` holds an **experimental**, offline, pure-Kotlin preference-learning engine and its synthetic benchmark (see [docs/scope/README.md](docs/scope/README.md)). It is **disabled by default**, and the app does not depend on it, so gameplay is unchanged. Under the pre-registered protocol it did **not** demonstrate an advantage over the rule baseline, and it is not validated or clinically beneficial.
 
+## Flagship technology: SMRITI Fit (explicit-needs layout solver)
+
+After SCOPE's NO-GO, five alternatives were compared ([docs/flagship/RESEARCH_REPORT.md](docs/flagship/RESEARCH_REPORT.md)). **SMRITI Fit** was built: a pure-Kotlin solver (`fit/`) that chooses a screen's layout from the person's explicit settings and the window size, checked against the app's real fonts, with reasons for every change and no behavioural data.
+- **Benchmark:** under its v2 pre-registered protocol, it passed all gates, with 96.5% agreement between its model and real Compose renders.
+- **Real renders of the radio screen:** it reduced on-screen layout problems from 53 to 13 of 100 combinations.
+- **Default:** it was worse in 4 of them (a known model error), so the pre-registered rule keeps it **off by default** (`FitFlags.radioEnabled`).
+
+See [docs/flagship/README.md](docs/flagship/README.md). No clinical claim is made.
+
 ## Quick start
 
 Requires JDK 17 and the Android SDK (platform 35). Full details are in [docs/BUILD_AND_RUN.md](docs/BUILD_AND_RUN.md).

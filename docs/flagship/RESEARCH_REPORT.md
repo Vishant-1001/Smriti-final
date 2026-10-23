@@ -167,6 +167,15 @@ The honest limitation: it is engineering, not AI. Its advantage against a *greed
 
 **Fallback: B, verified assistance statechart**, if A's benchmark shows no advantage over B2, or if device-side validation of the geometry model fails.
 
+## Outcome (added after implementation; the selection above is unchanged)
+
+Fit was implemented and evaluated under pre-registered protocols:
+- **v1:** NO-GO, because the F5 model-validity gate failed.
+- **v2:** GO.
+- **In-app real-render comparison:** 53 → 13 of 100 combinations with problems, but 4 combinations were worse, so Fit is off by default.
+
+See `README.md` in this folder.
+
 ---
 
 ## References (inspected)
