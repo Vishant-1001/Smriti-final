@@ -38,6 +38,10 @@ Every area below can be reached and completed through the real UI. Each one was 
 - No payment happens at the stalls; only the bus has a pretend payment.
 - There is no caregiver activity log (deliberately).
 
+## Experimental: SCOPE preference-learning research engine
+
+`scope/` holds an **experimental**, offline, pure-Kotlin preference-learning engine and its synthetic benchmark (see [docs/scope/README.md](docs/scope/README.md)). It is **disabled by default**, and the app does not depend on it, so gameplay is unchanged. Under the pre-registered protocol it did **not** demonstrate an advantage over the rule baseline, and it is not validated or clinically beneficial.
+
 ## Quick start
 
 Requires JDK 17 and the Android SDK (platform 35). Full details are in [docs/BUILD_AND_RUN.md](docs/BUILD_AND_RUN.md).

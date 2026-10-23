@@ -26,10 +26,13 @@ fun main(args: Array<String>) {
     data class GateRow(val profile: Profile, val vs: String, val point: Double, val lo: Double, val hi: Double, val regretRed: Double, val switchOk: Boolean, val go: Boolean)
     val gates = ArrayList<GateRow>()
     val calibAll = ArrayList<Pair<Double, Double>>()
+    val diagNames = listOf("B0-fixed", "B1-rules", "B1F-rules+feature-votes", "B2-non-contextual", "B3-full-SCOPE", "B3-VOI")
+    val diagRows = LinkedHashMap<Profile, Map<String, Double>>()
 
     for (profile in Profile.entries) {
         val perUser = Protocol.HELDOUT_SEEDS.map { Simulator.runUser(profile, it) }
         val names = perUser.first().keys.toList()
+        diagRows[profile] = diagNames.associateWith { n -> perUser.map { it.getValue(n).getValue(Protocol.PRIMARY_CHECKPOINT).regretNoAbstain }.average() }
         sb.appendLine("## ${profile.label}")
         sb.appendLine()
         sb.appendLine("At the primary checkpoint (${Protocol.PRIMARY_CHECKPOINT} comparison opportunities). Means over ${perUser.size} held-out users. Lower CE/regret is better.")
@@ -69,6 +72,15 @@ fun main(args: Array<String>) {
         }
         sb.appendLine()
     }
+
+    sb.appendLine("## Post-hoc diagnostic (added after the definitive run; NOT part of the pre-registered gate)")
+    sb.appendLine()
+    sb.appendLine("Normalised regret if each controller always proposed its top-ranked variant, ignoring its abstention rule, at the primary checkpoint. This separates ranking quality from the conservative proposal threshold. It must not be read as a verdict.")
+    sb.appendLine()
+    sb.appendLine("| Profile | " + diagNames.joinToString(" | ") + " |")
+    sb.appendLine("|---|" + diagNames.joinToString("") { "---|" })
+    for ((p, row) in diagRows) sb.appendLine("| ${p.label} | " + diagNames.joinToString(" | ") { f(row.getValue(it)) } + " |")
+    sb.appendLine()
 
     sb.appendLine("## Calibration of B3-full-SCOPE (all profiles, primary checkpoint, held-out pairs)")
     sb.appendLine()

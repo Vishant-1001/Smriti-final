@@ -26,6 +26,8 @@ interface Controller {
     /** Active controllers choose their own comparison (null = do not ask). Passive ones return null. */
     fun choosePair(ctx: ContextSnapshot, pool: List<VariantFeatures>): Pair<VariantFeatures, VariantFeatures>? = null
     val active: Boolean get() = false
+    /** POST-HOC DIAGNOSTIC ONLY: the controller's top-ranked variant ignoring its abstention rule. */
+    fun topRanked(ctx: ContextSnapshot, candidates: List<VariantFeatures>): VariantId = recommend(ctx, candidates).effectiveVariant
 }
 
 /** B0: never learns; always the manual default. */
@@ -43,6 +45,11 @@ class BayesController(schema: VariantSchema, config: ModelConfig, override val a
     override val name = label ?: config.name
     override fun probLeft(ctx: ContextSnapshot, a: VariantFeatures, b: VariantFeatures) = engine.probPrefer(ctx, a, b)
     override fun recommend(ctx: ContextSnapshot, candidates: List<VariantFeatures>) = engine.recommendUnchecked(ctx, candidates)
+    override fun topRanked(ctx: ContextSnapshot, candidates: List<VariantFeatures>): VariantId {
+        val preds = engine.predict(ctx, candidates)
+        if (engine.currentPosterior.labelledComparisons == 0 || preds.isEmpty()) return recommend(ctx, candidates).effectiveVariant
+        return preds.sortedWith(compareByDescending<app.smriti.scope.PosteriorPrediction> { it.expectedUtility }.thenBy { it.variantId.value }).first().variantId
+    }
     override fun observe(event: PairwisePreferenceEvent) {
         engine.update(event)
     }
@@ -67,6 +74,12 @@ class RuleController(private val schema: VariantSchema, private val featureVotes
 
     private data class Obs(val ctx: ContextSnapshot, val winner: VariantFeatures, val loser: VariantFeatures, val t: Int)
     private val history = ArrayList<Obs>()
+    private var lastTop: VariantId? = null
+
+    override fun topRanked(ctx: ContextSnapshot, candidates: List<VariantFeatures>): VariantId {
+        recommend(ctx, candidates)
+        return lastTop ?: schema.manualDefaults.getValue(ctx.activityId)
+    }
     private var clock = 0
 
     override fun observe(event: PairwisePreferenceEvent) {
@@ -146,6 +159,7 @@ class RuleController(private val schema: VariantSchema, private val featureVotes
         fun total(v: VariantFeatures) = (vs[v.variantId] ?: 0.0) + featureScore(ctx, v)
         val best = elig.sortedWith(compareByDescending<VariantFeatures> { total(it) }.thenByDescending { tableScore(ctx, it) }.thenBy { it.variantId.value }).firstOrNull()
             ?: return Recommendation.Abstain(AbstainReason.NO_CANDIDATES, fallback, emptyList())
+        lastTop = best.variantId
         return if (total(best) >= 1.0) Recommendation.Propose(best.variantId, 1.0, emptyList())
         else Recommendation.Abstain(AbstainReason.NO_EVIDENCE, fallback, emptyList())
     }

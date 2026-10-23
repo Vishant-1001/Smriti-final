@@ -113,3 +113,14 @@ Screenshots are in `docs/screenshots/emulator/`. The `q*` files are portrait Pas
 - The caregiver photo and song pickers on a device.
 - Reduced motion on a device; system font scales above 1.3; foldables.
 - Any testing with people living with dementia or caregivers (see SAFETY_RISK_REGISTER.md).
+
+## SCOPE experimental module (added later; separate from the app)
+
+```
+./gradlew :scope:test               # 23 passed, 0 failed (ScopeEngineTest 18, SimulatorTest 5)
+./gradlew :scope:runScopeBenchmark  # exit 0; docs/scope/SCOPE_BENCHMARK_RESULTS.md
+./gradlew :app:testDebugUnitTest    # re-run after adding the module: 212 passed, 0 failed
+```
+
+**Benchmark verdict: pre-registered criterion NOT met.** See `docs/scope/README.md`.
+

@@ -167,6 +167,8 @@ data class Metrics(
     val labelledSoFar: Int,
     val asked: Int,
     val switchRate: Double,
+    /** POST-HOC DIAGNOSTIC (not part of the gate): regret if the top-ranked variant were always proposed. */
+    val regretNoAbstain: Double,
     /** (predicted q, true p*) pairs for calibration buckets. */
     val calibration: List<Pair<Double, Double>>,
 )
@@ -271,6 +273,7 @@ object Simulator {
         var ceU = 0.0; var ceUN = 0
         var agree = 0.0
         var regret = 0.0; var regretN = 0
+        var regretTop = 0.0
         var abstain = 0
         val calib = ArrayList<Pair<Double, Double>>()
         for (act in Protocol.ACTIVITIES) for (mode in SocialMode.entries) {
@@ -290,10 +293,14 @@ object Simulator {
             if (rec is Recommendation.Abstain) abstain++
             val k = view.indexOfFirst { it.variantId == rec.effectiveVariant }
             val max = u.max(); val min = u.min()
-            if (max - min > 1e-9) { regret += (max - u[k]) / (max - min); regretN++ }
+            val kt = view.indexOfFirst { it.variantId == c.topRanked(ctx, view) }
+            if (max - min > 1e-9) {
+                regret += (max - u[k]) / (max - min); regretN++
+                regretTop += (max - u[kt]) / (max - min)
+            }
         }
         val contexts = Protocol.ACTIVITIES.size * SocialMode.entries.size
-        return Metrics(ce / ceN, ceU / ceUN, agree / ceN, regret / regretN, abstain.toDouble() / contexts, Double.NaN, Double.NaN, 0, 0, 0.0, calib)
+        return Metrics(ce / ceN, ceU / ceUN, agree / ceN, regret / regretN, abstain.toDouble() / contexts, Double.NaN, Double.NaN, 0, 0, 0.0, regretTop / regretN, calib)
     }
 
     /** Paired bootstrap of the relative improvement (base − cand)/base in mean held-out CE. Returns (point, low95, high95). */
