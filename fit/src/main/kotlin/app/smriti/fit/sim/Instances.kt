@@ -53,9 +53,14 @@ object Instances {
                 if (r.nextBoolean()) statuses[r.nextInt(statuses.size)] else null, pool.take(n), r.nextBoolean(),
             )
         }
-        return Instance(seed, screen, needs, dev, cls, real)
+        // Protocol v2: share of devices on Android 14+ (non-linear font scaling). An assumption.
+        val api34 = r.nextInt(100) < 60
+        return Instance(seed, screen, needs, dev.copy(nonLinearFontScaling = api34), cls, real)
     }
 
     val DEV_SEEDS = 1L..2000L
-    val EVAL_SEEDS = 3001L..8000L
+    /** Protocol v1 evaluation (FIT_EVAL_RESULTS.md); reproducible with the v1 code at commit f11b561. */
+    val EVAL_SEEDS_V1 = 3001L..8000L
+    /** Protocol v2 evaluation: fresh seeds. */
+    val EVAL_SEEDS = 10001L..15000L
 }

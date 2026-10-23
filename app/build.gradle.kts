@@ -41,7 +41,12 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
-            all { it.systemProperty("robolectric.pixelCopyRenderMode", "hardware") }
+            all {
+                it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+                // FitValidationTest measures text with java.awt (the :fit model's measurer).
+                it.systemProperty("java.awt.headless", "true")
+                for (k in listOf("fit.capture", "fit.seeds", "fit.out")) System.getProperty(k)?.let { v -> it.systemProperty(k, v) }
+            }
         }
     }
     bundle {
@@ -85,6 +90,8 @@ dependencies {
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.androidx.test.junit)
+    // Test-only: validates the :fit geometry model against real Compose rendering (FIT_PROTOCOL.md F5).
+    testImplementation(project(":fit"))
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)

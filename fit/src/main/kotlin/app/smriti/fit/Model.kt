@@ -30,6 +30,8 @@ data class Device(
     val systemFontScale: Double = 1.0,
     /** Height taken by system bars: status bar (24) + gesture navigation (24) by assumption; 0 in Robolectric. */
     val systemBarsDp: Double = 48.0,
+    /** Android 14+ (API 34): Compose scales large text non-linearly (measured table, [FontScaling]). */
+    val nonLinearFontScaling: Boolean = true,
 ) {
     val landscape: Boolean get() = widthDp > heightDp
 }

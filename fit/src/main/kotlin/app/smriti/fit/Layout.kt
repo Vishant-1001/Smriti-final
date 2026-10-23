@@ -13,6 +13,38 @@ fun interface TextMeasurer {
     fun widthDp(text: String, lang: Lang, fontSizeDp: Double): Double
 }
 
+/**
+ * sp → dp as Compose computes it for the app's hand-built `Density(density, fontScale)`.
+ * On API 34+ this is non-linear for total scales between about 1.03 and 2.0 and linear outside
+ * that range; the table was recorded from Compose on SDK 34 by `FontScaleTableTest` (app tests).
+ * Before API 34 the conversion is linear.
+ */
+object FontScaling {
+    private val table: Map<Double, Map<Double, Double>> by lazy {
+        val text = FontScaling::class.java.getResourceAsStream("/app/smriti/fit/font_scale_sdk34.tsv")!!.bufferedReader(Charsets.UTF_8).readText()
+        text.lines().filter { it.isNotBlank() && !it.startsWith("#") }.map { it.split('\t') }
+            .groupBy({ it[0].toDouble() }, { it[1].toDouble() to it[2].toDouble() })
+            .mapValues { (_, v) -> v.toMap() }
+    }
+
+    fun dp(sp: Double, scale: Double, nonLinear: Boolean): Double {
+        if (!nonLinear) return sp * scale
+        val row = table.entries.firstOrNull { kotlin.math.abs(it.key - scale) < 1e-3 }?.value
+        return row?.get(sp) ?: interpolate(sp, scale)
+    }
+
+    /** Outside the recorded grid: linear interpolation between recorded scales at this size. */
+    private fun interpolate(sp: Double, scale: Double): Double {
+        val rows = table.entries.filter { sp in it.value }.sortedBy { it.key }
+        if (rows.isEmpty() || scale <= rows.first().key || scale >= 2.0) return sp * scale
+        val hi = rows.first { it.key >= scale }
+        val lo = rows.last { it.key <= scale }
+        if (hi.key == lo.key) return hi.value.getValue(sp)
+        val t = (scale - lo.key) / (hi.key - lo.key)
+        return lo.value.getValue(sp) * (1 - t) + hi.value.getValue(sp) * t
+    }
+}
+
 /** Caches widths at a reference size and scales linearly (fractional metrics, no hinting). */
 class CachingMeasurer(private val base: TextMeasurer, private val referenceDp: Double = 100.0) : TextMeasurer {
     private val cache = HashMap<Pair<String, Lang>, Double>()
@@ -138,12 +170,15 @@ class LayoutModel(private val measurer: TextMeasurer) {
         val sys = device.systemFontScale
         val contentScale = sys * c.textLevel.scale
         val hudScale = if (c.hudFollowsTextSize) contentScale else sys
+        val nl = device.nonLinearFontScaling
+        fun content(sp: Double) = FontScaling.dp(sp, contentScale, nl)
+        fun hudText(sp: Double) = FontScaling.dp(sp, hudScale, nl)
         val w = device.widthDp.toDouble()
         val usableH = device.heightDp - device.systemBarsDp
 
         // ---------------------------------------------------------------- top bar
         val hud = screen.hud
-        val hudFont = Dims.HUD_LABEL_SP * hudScale
+        val hudFont = hudText(Dims.HUD_LABEL_SP)
         val hudMaxW = if (c.hudWideButtons) Dims.HUD_BTN_MAX_W_WIDE else Dims.HUD_BTN_MAX_W
         fun hudButton(ctl: Control): Item {
             val textMax = hudMaxW - 2 * Dims.HUD_BTN_PAD
@@ -152,10 +187,10 @@ class LayoutModel(private val measurer: TextMeasurer) {
             val content = if (natural <= textMax + Dims.EPS) natural else wrapped.widest
             val width = (max(Dims.HUD_ICON, content) + 2 * Dims.HUD_BTN_PAD).coerceIn(Dims.HUD_BTN_MIN_W, hudMaxW)
             val lines = min(wrapped.lines, Dims.MAX_LINES)
-            val height = max(Dims.HUD_BTN_MIN_H, 2 * Dims.HUD_BTN_PAD + Dims.HUD_ICON + lines * Dims.HUD_LABEL_LINE_SP * hudScale)
+            val height = max(Dims.HUD_BTN_MIN_H, 2 * Dims.HUD_BTN_PAD + Dims.HUD_ICON + lines * hudText(Dims.HUD_LABEL_LINE_SP))
             return Item(width, height, ctl)
         }
-        val titleFont = Dims.TITLE_SP * contentScale
+        val titleFont = content(Dims.TITLE_SP)
         fun titleHeight(avail: Double): Double {
             val textAvail = avail - 2 * Dims.TITLE_PAD_H
             if (avail < Dims.TITLE_MIN_W) {
@@ -166,7 +201,7 @@ class LayoutModel(private val measurer: TextMeasurer) {
             if (wr.brokenWord != null || wr.lines > Dims.MAX_LINES) {
                 v += Violation(ViolationKind.TITLE_TRUNCATED, "hud:title", "'${hud.title}' needs more than two lines or a broken word at ${textAvail.fmt()} dp")
             }
-            return min(wr.lines, Dims.MAX_LINES) * Dims.TITLE_LINE_SP * contentScale + 2 * Dims.TITLE_PAD_V
+            return min(wr.lines, Dims.MAX_LINES) * content(Dims.TITLE_LINE_SP) + 2 * Dims.TITLE_PAD_V
         }
         val hudItems = hud.buttons.associateWith { hudButton(it) }
         val rowW = w - 2 * Dims.HUD_PAD_H
@@ -211,14 +246,14 @@ class LayoutModel(private val measurer: TextMeasurer) {
         val innerW = outerW - 2 * Dims.PANEL_PAD
         val cols = c.columns.coerceIn(1, max(1, p.controls.size))
         val cellW = (innerW - (cols - 1) * Dims.BTN_GAP) / cols
-        val btnFont = Dims.BTN_LABEL_SP * contentScale
+        val btnFont = content(Dims.BTN_LABEL_SP)
         val textAvail = when (c.style) {
             ButtonStyle.INLINE -> cellW - 2 * Dims.INLINE_PAD_H - Dims.BTN_ICON - Dims.ICON_GAP
             ButtonStyle.STACKED -> cellW - 2 * Dims.STACK_PAD_H
         }
         val btnHeights = p.controls.map { ctl ->
             val wr = labelChecks("panel:${ctl.id}", ctl.label, lang, btnFont, textAvail, v)
-            val textH = wr.lines * Dims.BTN_LABEL_LINE_SP * contentScale
+            val textH = wr.lines * content(Dims.BTN_LABEL_LINE_SP)
             val h = when (c.style) {
                 ButtonStyle.INLINE -> max(Dims.BTN_ICON, textH) + 2 * Dims.INLINE_PAD_V
                 ButtonStyle.STACKED -> Dims.BTN_ICON + textH + 2 * Dims.STACK_PAD_V
@@ -228,7 +263,7 @@ class LayoutModel(private val measurer: TextMeasurer) {
         p.controls.forEachIndexed { i, ctl -> targetCheck("panel:${ctl.id}", cellW, btnHeights[i], needs, v) }
 
         val statusH = p.status?.let {
-            Dims.STATUS_SPACER + wrap(it, lang, Dims.STATUS_SP * contentScale, innerW).lines * Dims.STATUS_LINE_SP * contentScale
+            Dims.STATUS_SPACER + wrap(it, lang, content(Dims.STATUS_SP), innerW).lines * content(Dims.STATUS_LINE_SP)
         } ?: 0.0
         val illusPortrait = if (p.hasIllustration && c.illustration && !landscape) {
             min(Dims.ILLUS_MAX_H, (w - 2 * Dims.SCREEN_PAD - 2 * Dims.ILLUS_SIDE_PAD) * Dims.ILLUS_ASPECT) + Dims.PORTRAIT_GAP
@@ -241,7 +276,7 @@ class LayoutModel(private val measurer: TextMeasurer) {
             rowBottoms += y
             y += Dims.BTN_GAP
         }
-        val panelBottom = y + p.trailingRowLabelLines * Dims.TRAILING_LABEL_LINE_SP * contentScale + p.trailingRowFixedDp + Dims.PANEL_PAD
+        val panelBottom = y + p.trailingRowLabelLines * content(Dims.TRAILING_LABEL_LINE_SP) + p.trailingRowFixedDp + Dims.PANEL_PAD
         val limit = if (landscape) usableH - Dims.SCREEN_PAD - Dims.BOTTOM_PAD else usableH - Dims.BOTTOM_PAD
         p.controls.forEachIndexed { i, ctl ->
             val bottom = rowBottoms[i / cols]

@@ -28,10 +28,12 @@ fun JavaExec.fitBench(mode: String, out: String) {
     args(mode, appRes, out)
 }
 
+// v1 results (FIT_DEV_RESULTS.md, FIT_EVAL_RESULTS.md) are kept as committed; they are reproducible
+// from the v1 code at commit f11b561. These tasks run protocol v2 (docs/flagship/FIT_PROTOCOL_v2.md).
 // Development split only (seeds 1-2000, development content pool).
-tasks.register<JavaExec>("runFitDev") { fitBench("dev", rootProject.file("docs/flagship/FIT_DEV_RESULTS.md").absolutePath) }
-// Pre-registered evaluation (seeds 3001-8000, held-out content pool). See docs/flagship/FIT_PROTOCOL.md.
-tasks.register<JavaExec>("runFitEval") { fitBench("eval", rootProject.file("docs/flagship/FIT_EVAL_RESULTS.md").absolutePath) }
+tasks.register<JavaExec>("runFitDev") { fitBench("dev", rootProject.file("docs/flagship/FIT_DEV_RESULTS_v2.md").absolutePath) }
+// Pre-registered evaluation (seeds 10001-15000, held-out content pool).
+tasks.register<JavaExec>("runFitEval") { fitBench("eval", rootProject.file("docs/flagship/FIT_EVAL_RESULTS_v2.md").absolutePath) }
 // Human-readable demo: one screen under four different explicit profiles, with explanations.
 tasks.register<JavaExec>("runFitDemo") { fitBench("demo", rootProject.file("docs/flagship/FIT_DEMO.md").absolutePath) }
 // Development only: concrete violating instances, for checking the geometry model (writes to build/).

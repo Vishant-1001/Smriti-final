@@ -185,7 +185,7 @@ class FitSolverTest {
         val needsFields = Needs::class.java.declaredFields.map { it.name }.filter { !it.startsWith("$") }.toSet()
         assertEquals(setOf("language", "textLevel", "textIsNeed", "minTargetDp", "reducedMotion"), needsFields)
         val deviceFields = Device::class.java.declaredFields.map { it.name }.filter { !it.startsWith("$") }.toSet()
-        assertEquals(setOf("widthDp", "heightDp", "systemFontScale", "systemBarsDp"), deviceFields)
+        assertEquals(setOf("widthDp", "heightDp", "systemFontScale", "systemBarsDp", "nonLinearFontScaling"), deviceFields)
     }
 
     @Test

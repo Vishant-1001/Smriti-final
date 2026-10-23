@@ -166,7 +166,7 @@ fun report(title: String, rows: List<Row>, gates: Boolean): String = buildString
         val d2 = ciRows.getValue("B2/text deficit")
         val f3 = g2.third >= 0 && d2.third >= 0
         val f4 = q(t, 0.95) <= 20.0
-        appendLine("## Pre-registered gates (FIT_PROTOCOL.md)")
+        appendLine("## Pre-registered gates (FIT_PROTOCOL_v2.md)")
         appendLine()
         appendLine("| Gate | Requirement | Result |")
         appendLine("|---|---|---|")
@@ -178,7 +178,7 @@ fun report(title: String, rows: List<Row>, gates: Boolean): String = buildString
         val strictly = g2.second > 0 || d2.second > 0
         appendLine("**Verdict: ${if (f1 && f2 && f3 && f4) "GO" else "NO-GO"}.** Strictly better than B2 on at least one metric (CI lower bound > 0): ${if (strictly) "yes" else "no"}.")
         appendLine()
-        appendLine("F5 (device measurement validity) is reported separately in FIT_VALIDATION.md.")
+        appendLine("F5 (model validity against real Compose rendering) is reported separately in FIT_VALIDATION_v2.md.")
     }
 }
 
@@ -224,8 +224,8 @@ fun main(args: Array<String>) {
     val content = Content(resDir)
     val solver = FitSolver(CachingMeasurer(AwtMeasurer(resDir)))
     val text = when (mode) {
-        "dev" -> report("SMRITI Fit: development results (seeds 1–2000, development content pool)", run(Instances.DEV_SEEDS, false, content, solver), gates = false)
-        "eval" -> report("SMRITI Fit: pre-registered evaluation (seeds 3001–8000, held-out content pool)", run(Instances.EVAL_SEEDS, true, content, solver), gates = true)
+        "dev" -> report("SMRITI Fit v2: development results (seeds 1–2000, development content pool)", run(Instances.DEV_SEEDS, false, content, solver), gates = false)
+        "eval" -> report("SMRITI Fit v2: pre-registered evaluation (seeds 10001–15000, held-out content pool)", run(Instances.EVAL_SEEDS, true, content, solver), gates = true)
         "demo" -> demo(content, solver)
         // Development only: concrete violating instances per device class, for checking the model.
         "examples" -> buildString {
