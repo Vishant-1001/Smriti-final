@@ -40,13 +40,26 @@ There was no image-generation tool in the build environment, so the art is hand-
 
 ## Characters
 
-**SMRITI Guide (canonical):** an adult Tamil woman, about 40s. Medium-brown skin `#B8794F`, centre-parted black hair in a low bun with a jasmine strand, small red bindi, gold ear studs and nose stud. She wears a teal cotton saree with a gold border and a maroon blouse. Her expression is calm and friendly, never exaggerated. There are two frames, `neutral` and `speaking` (mouth open), alternated every 190 ms only while speech is playing, and never with Reduced motion on. Other characters (conductor, vendors) are not drawn yet.
+**SMRITI Guide (canonical):** an adult Tamil woman, about 40s. Medium-brown skin `#B8794F`, centre-parted black hair in a low bun with a jasmine strand, small red bindi, gold ear studs and nose stud. She wears a teal cotton saree with a gold border and a maroon blouse. Her expression is calm and friendly, never exaggerated. There are two frames, `neutral` and `speaking` (mouth open), alternated every 190 ms only while speech is playing, and never with Reduced motion on. **Other characters** are drawn from the same parameterised bust template (`art_source/generator/people.py`). Every face therefore shares proportions, line weights and eyes. Each has the same two frames.
+
+| ID | Appearance |
+|---|---|
+| `conductor` | Adult man, khaki uniform, cap with brass badge, satchel strap, moustache |
+| `vendor_produce` | Adult man, white shirt, green apron, moustache |
+| `vendor_spice` | Older man, grey hair, glasses, cream shirt, terracotta apron |
+| `vendor_flower` | Adult woman, pink saree with gold border, green blouse, jasmine in her hair, bindi |
+| `vendor_cloth` | Adult man, light-blue shirt, moustache |
+
+Vendors and the conductor appear in their scenes from the waist up: the counter or the seat backs hide the lower body. The dialogue portrait is the same drawing.
 
 ## Cultural notes (to be reviewed by people from the community)
 
 - **House:** single-storey South Indian house with a hipped Mangalore-tile roof, wooden pillars, thinnai (raised platforms), teal wooden shutters, a kolam at the threshold, coconut palms, banana plant, tulsi.
 - **Interior:** red-oxide or terracotta floor, wooden ceiling beams, brass kuthu vilakku (unlit), steel and brass vessels, a black hand-crank sewing machine.
 - **Memory Book samples:** a kolam, filter coffee in a davara-tumbler, a jasmine string. There are deliberately **no people** in sample pages and picture frames, so nothing implies someone's family.
+- **Kitchen:** wall tiles, a two-burner stove with a South Indian coffee filter and a tumbler-davara, steel and brass vessels. There are no knives or flames.
+- **Market:** striped awnings, cane baskets, a jasmine string, marigolds, turmeric and chilli in bowls, folded cotton. The four fabrics differ by *pattern* (stripes, dots, checks, leaves), not only by colour.
+- **Bus:** a generic city bus with blank number boards; the app draws the numbers. No real transport company's branding is used.
 - None of this has been reviewed by Tamil cultural or community reviewers yet. That is an open item in the risk register.
 
 ## Asset sizes and naming
@@ -59,6 +72,9 @@ There was no image-generation tool in the build environment, so the art is hand-
 | Character frame | 512×512 | WebP lossless, alpha | `assets/characters/<character>_<frame>.webp` |
 | Prop | 800×600 | WebP lossless, alpha | `assets/props/<prop>.webp` |
 | Memory Book sample | 600×450 | WebP q88 | `assets/memory/memory_sample_<key>.webp` |
+| Shop item | 320×320 | WebP lossless, alpha | `assets/items/<item_id>.webp` (ID = catalog ID = stall hotspot ID) |
+| Kitchen utensil/dish state | 320×320 | WebP lossless, alpha | `assets/kitchen/<thing>_<state>.webp` (e.g. `filter_powder`, `plate_dirty`) |
+| Sewing swatch/template/creation | 320×320 | WebP lossless, alpha | `assets/sewing/swatch_<fabric>`, `template_<kind>`, `<kind>_<fabric>` |
 
 IDs are lower_snake_case and stable. Code never uses file names as identity: scenes, hotspots, pages and tracks have their own IDs.
 

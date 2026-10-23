@@ -14,7 +14,12 @@ app/src/main/java/app/smriti/
 │   ├── MemoryBook.kt       MemoryPage / MemoryBookState
 │   ├── Settings.kt         Language, text size, separate voice/music volume, reduced motion
 │   ├── Dialogue.kt         Authored Guide lines (string resources)
-│   └── SaveData.kt         Versioned save schema (no scores, timings or error counts)
+│   ├── Catalog.kt          Stable shop item IDs, stalls, starter fabric
+│   ├── Shopping.kt         List, bag, put back/unpack, hint levels, regions
+│   ├── Kitchen.kt          CookingState (filter coffee) and DishwashState
+│   ├── Sewing.kt           SewingState and Creation
+│   ├── Trip.kt             TripState: bus cue options, ticket, pretend payment with change
+│   └── SaveData.kt         Versioned save schema v2 (no scores, timings or error counts)
 ├── data/
 │   ├── SaveCodec.kt        JSON encode/decode, migrations, sanitising
 │   ├── SaveRepository.kt   DataStore-backed save (+ in-memory version for tests)
@@ -31,7 +36,9 @@ app/src/main/java/app/smriti/
     ├── SmritiRoot.kt       Language context, theme, scene routing, HUD, overlays, mini player
     ├── scene/SceneView.kt  Illustrated scene + hotspots + Guide corner choice
     ├── overlays/           Guide panel, subtitle panel, destination chooser, settings
-    ├── screens/            Title, Memory Book, Radio, Caregiver tools
+    ├── screens/            Title, Memory Book, Radio, Caregiver tools, KitchenScreens (cooking, dishes),
+    │                       StitchScreen (+ creations gallery), TravelScreens (trip, bus cue, bus panel,
+    │                       shopping panel with hints, item card)
     ├── components/         Buttons, panels, Guide portrait animation, icons, image loading
     └── theme/              Palette tokens, Tamil/Latin fonts, text-size multiplier
 ```
@@ -64,6 +71,24 @@ Hotspots are mapped through the same frame and enlarged to at least 64 dp. The G
 
 **Persistence schema.** `SaveData.schemaVersion = 1`. `SaveCodec.decode` tolerates missing fields, unknown fields, unknown enum values and corrupt files. It falls back to defaults and never crashes.
 
+## Game path and state flow
+
+```
+Title → Exterior → Veranda ─┬─ Bedroom ─ Memory Book / Radio
+                            ├─ Kitchen ─ Cooking / Dishes
+                            ├─ Sewing ─ Stitch (fabrics = starter + cloth bought)
+                            └─ Front door → chooser → Trip(TO_MARKET) ─┬─ bus: Bus stop → Bus (ticket, pay) ─┐
+                                                                      └─ go straight ───────────────────────┴→ Market → 4 stalls
+Market → "Go home" → Trip(TO_HOME) ─┬─ bus: Bus (no number task) ─┐
+                                    └─ go straight ───────────────┴→ Veranda
+```
+
+- `SceneNavigator.arriveAt` resets the stack on arrival, so Back at the market goes home and Back at home stays home.
+- `TripState` exists only during travel and is cleared on arrival.
+- `ShoppingState.bag`/`putAway` persist. Their cloth items feed `ShoppingState.fabrics` for sewing.
+- Every activity state is written through to `SaveData`, so leaving and coming back (or a process restart) resumes the activity.
+- Transient helpers (hint highlight, selected item card) live in `Helpers` and are never saved.
+
 ## Not in this version
 
-There is no activity/event log: the safest log is the one that does not exist. Also absent: Room, Media3, Navigation Compose, network code, analytics, speech recognition, and LLM dialogue.
+There is no activity/event log: the safest log is the one that does not exist. The optional caregiver report described in the brief was deliberately not built. Also absent: Room, Media3, Navigation Compose, network code, analytics, speech recognition, and LLM dialogue.

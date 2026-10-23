@@ -86,22 +86,24 @@ fun TripScreen(
     val toMarket = direction == TripDirection.TO_MARKET
     BoxWithConstraints(modifier.fillMaxSize().background(SmritiColors.Cream)) {
         val wide = maxWidth > 700.dp
+        val short = maxHeight < 500.dp
         Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(stringResource(if (toMarket) R.string.trip_title_market else R.string.trip_title_home), style = MaterialTheme.typography.headlineSmall)
+            // The two ways to travel come first so they are visible without scrolling on short screens.
+            val cards: @Composable (Modifier) -> Unit = { m ->
+                TravelCard(stringResource(R.string.trip_take_bus), "scenes/bus_stop_land.webp", onTakeBus, m.testTag("trip_bus"), short)
+                TravelCard(
+                    stringResource(if (toMarket) R.string.trip_direct_market else R.string.trip_direct_home),
+                    if (toMarket) "scenes/market_land.webp" else "scenes/veranda_land.webp", onDirect, m.testTag("trip_direct"), short,
+                )
+            }
+            if (wide) Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) { cards(Modifier.weight(1f)) }
+            else Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { cards(Modifier.fillMaxWidth()) }
             Panel(Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.shopping_title), style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
                 ListPictures(shopping)
             }
-            val cards: @Composable (Modifier) -> Unit = { m ->
-                TravelCard(stringResource(R.string.trip_take_bus), "scenes/bus_stop_land.webp", onTakeBus, m.testTag("trip_bus"))
-                TravelCard(
-                    stringResource(if (toMarket) R.string.trip_direct_market else R.string.trip_direct_home),
-                    if (toMarket) "scenes/market_land.webp" else "scenes/veranda_land.webp", onDirect, m.testTag("trip_direct"),
-                )
-            }
-            if (wide) Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) { cards(Modifier.weight(1f)) }
-            else Column(verticalArrangement = Arrangement.spacedBy(14.dp)) { cards(Modifier.fillMaxWidth()) }
         }
     }
 }
@@ -127,11 +129,11 @@ fun ListPictures(shopping: ShoppingState) {
 }
 
 @Composable
-private fun TravelCard(label: String, image: String, onClick: () -> Unit, modifier: Modifier) {
+private fun TravelCard(label: String, image: String, onClick: () -> Unit, modifier: Modifier, short: Boolean = false) {
     val bmp = rememberAssetBitmap(image)
     Surface(onClick = onClick, modifier = modifier.semantics { contentDescription = label }, shape = RoundedCornerShape(20.dp), color = SmritiColors.PaperDim, border = BorderStroke(2.dp, SmritiColors.Outline)) {
         Column {
-            if (bmp != null) Image(bmp, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(130.dp).clipToBounds())
+            if (bmp != null) Image(bmp, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(if (short) 80.dp else 130.dp).clipToBounds())
             Text(label, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(14.dp))
         }
     }
@@ -180,45 +182,59 @@ fun BusPanel(
     modifier: Modifier = Modifier,
 ) {
     val home = trip.direction == TripDirection.TO_HOME
-    Panel(modifier.widthIn(max = 560.dp).verticalScroll(rememberScrollState()).testTag("bus_panel")) {
+    Panel(modifier.widthIn(max = 860.dp).verticalScroll(rememberScrollState()).testTag("bus_panel")) {
         when (trip.phase) {
             TripPhase.AT_STOP, TripPhase.ON_BUS -> {
-                BigButton(stringResource(R.string.bus_talk), onTalk, Modifier.fillMaxWidth().testTag("bus_talk"), SmritiIcons.Speaker, color = SmritiColors.Leaf)
+                BigButton(stringResource(R.string.bus_talk), onTalk, Modifier.fillMaxWidth().testTag("bus_talk"), SmritiIcons.Speaker, color = SmritiColors.Leaf, stacked = true)
                 Spacer(Modifier.height(10.dp))
-                QuietButton(stringResource(R.string.bus_skip), onSkip, Modifier.fillMaxWidth().testTag("bus_skip"), SmritiIcons.Next)
+                // Paying can be done for the person from the very start of the ride.
+                QuietButton(stringResource(R.string.pay_for_me), onPayForMe, Modifier.fillMaxWidth().testTag("pay_for_me"), SmritiIcons.Help, stacked = true)
+                Spacer(Modifier.height(10.dp))
+                QuietButton(stringResource(R.string.bus_skip), onSkip, Modifier.fillMaxWidth().testTag("bus_skip"), SmritiIcons.Next, stacked = true)
             }
-            TripPhase.TICKET, TripPhase.PAID -> {
-                Ticket(trip)
-                Spacer(Modifier.height(10.dp))
-                if (trip.phase == TripPhase.TICKET) {
-                    Text(stringResource(R.string.pay_in_hand, trip.trayTotal), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("pay_in_hand"))
-                    if (trip.trayTotal in 1 until trip.fare) {
-                        Text(stringResource(R.string.pay_more, trip.stillNeeded), style = MaterialTheme.typography.bodyMedium, color = SmritiColors.InkSoft, modifier = Modifier.testTag("pay_more"))
+            TripPhase.TICKET, TripPhase.PAID -> BoxWithConstraints {
+                // Wide but short screens: ticket on the left, paying on the right, so nothing important
+                // needs scrolling. Once paid, "Get off" comes first.
+                val twoColumns = maxWidth > 640.dp
+                val paying: @Composable () -> Unit = {
+                    if (trip.phase == TripPhase.TICKET) {
+                        Text(stringResource(R.string.pay_in_hand, trip.trayTotal), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("pay_in_hand"))
+                        if (trip.trayTotal in 1 until trip.fare) {
+                            Text(stringResource(R.string.pay_more, trip.stillNeeded), style = MaterialTheme.typography.bodyMedium, color = SmritiColors.InkSoft, modifier = Modifier.testTag("pay_more"))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            TripState.MONEY.forEach { v -> Money(v, highlight == "money_$v") { onMoney(v) } }
+                        }
+                        Spacer(Modifier.height(10.dp))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            BigButton(stringResource(R.string.pay_button), onPay, Modifier.testTag("pay"), color = SmritiColors.Leaf, enabled = trip.trayTotal > 0)
+                            ToolButton(stringResource(R.string.pay_clear), SmritiIcons.Back, onClear, Modifier.testTag("pay_clear"), enabled = trip.tray.isNotEmpty())
+                            ToolButton(stringResource(R.string.pay_show_me), SmritiIcons.Eye, onShowMe, Modifier.testTag("pay_show_me"))
+                            ToolButton(stringResource(R.string.pay_for_me), SmritiIcons.Help, onPayForMe, Modifier.testTag("pay_for_me"))
+                            ToolButton(stringResource(R.string.bus_skip), SmritiIcons.Next, onSkip, Modifier.testTag("bus_skip"))
+                        }
+                        Text(stringResource(R.string.pay_pretend), style = MaterialTheme.typography.labelMedium, color = SmritiColors.InkSoft, modifier = Modifier.padding(top = 6.dp))
+                    } else {
+                        BigButton(
+                            stringResource(if (home) R.string.bus_arrive_home else R.string.bus_arrive_market), onArrive,
+                            Modifier.fillMaxWidth().testTag("bus_arrive"), SmritiIcons.Next, color = SmritiColors.Leaf,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.pay_done), style = MaterialTheme.typography.titleMedium, color = SmritiColors.Leaf, modifier = Modifier.testTag("pay_done"))
+                        if (trip.change > 0) Text(stringResource(R.string.pay_change, trip.change), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("pay_change"))
                     }
-                    Spacer(Modifier.height(8.dp))
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        TripState.MONEY.forEach { v -> Money(v, highlight == "money_$v") { onMoney(v) } }
-                    }
-                    Spacer(Modifier.height(10.dp))
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BigButton(stringResource(R.string.pay_button), onPay, Modifier.testTag("pay"), color = SmritiColors.Leaf, enabled = trip.trayTotal > 0)
-                        ToolButton(stringResource(R.string.pay_clear), SmritiIcons.Back, onClear, Modifier.testTag("pay_clear"), enabled = trip.tray.isNotEmpty())
-                        ToolButton(stringResource(R.string.pay_show_me), SmritiIcons.Eye, onShowMe, Modifier.testTag("pay_show_me"))
-                        ToolButton(stringResource(R.string.pay_for_me), SmritiIcons.Help, onPayForMe, Modifier.testTag("pay_for_me"))
-                    }
-                    Text(stringResource(R.string.pay_pretend), style = MaterialTheme.typography.labelMedium, color = SmritiColors.InkSoft, modifier = Modifier.padding(top = 6.dp))
-                } else {
-                    Text(stringResource(R.string.pay_done), style = MaterialTheme.typography.titleMedium, color = SmritiColors.Leaf, modifier = Modifier.testTag("pay_done"))
-                    if (trip.change > 0) Text(stringResource(R.string.pay_change, trip.change), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("pay_change"))
-                    Spacer(Modifier.height(10.dp))
-                    BigButton(
-                        stringResource(if (home) R.string.bus_arrive_home else R.string.bus_arrive_market), onArrive,
-                        Modifier.fillMaxWidth().testTag("bus_arrive"), SmritiIcons.Next, color = SmritiColors.Leaf,
-                    )
                 }
-                if (trip.phase == TripPhase.TICKET) {
-                    Spacer(Modifier.height(8.dp))
-                    QuietButton(stringResource(R.string.bus_skip), onSkip, Modifier.fillMaxWidth().testTag("bus_skip"), SmritiIcons.Next)
+                if (twoColumns) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Column(Modifier.weight(0.42f)) { Ticket(trip) }
+                        Column(Modifier.weight(0.58f)) { paying() }
+                    }
+                } else {
+                    Column {
+                        if (trip.phase == TripPhase.PAID) { paying(); Spacer(Modifier.height(10.dp)); Ticket(trip) }
+                        else { Ticket(trip); Spacer(Modifier.height(10.dp)); paying() }
+                    }
                 }
             }
         }

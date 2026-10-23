@@ -64,6 +64,10 @@ python -I art_source/generator/demo_audio.py      # needs ffmpeg with libvorbis;
 
 After changing scene art, run `./gradlew testDebugUnitTest`. `SceneAssetsTest` checks that hotspots match the code catalog, stay inside the protected area, and do not overlap.
 
+## APK
+
+`./gradlew assembleDebug` produces `app/build/outputs/apk/debug/app-debug.apk` (about 13.5 MB). It is a debug-signed build, suitable for sideloading onto a test device with `adb install`, not for distribution.
+
 ## Release builds
 
 There is no signing configuration and no release has been made. `isMinifyEnabled = false`. App bundles do not split by language, because Tamil and English are switched inside the app.

@@ -10,11 +10,11 @@ The merged manifest requests **no** dangerous permissions and **no `INTERNET` pe
 
 | Data | Where | Why |
 |---|---|---|
-| Current scene stack, settings, Memory Book pages (captions, photo file names), playlist, selected track | `files/datastore/smriti_save.json` (app-private) | To resume where the person left off |
+| Current scene stack, settings, Memory Book pages (captions, photo file names), playlist, selected track, shopping list and bag, cooking/dishes/sewing progress, things made, an in-progress bus trip (direction, chosen bus number for that ride's ticket, pretend coins in hand) | `files/datastore/smriti_save.json` (app-private) | To resume where the person left off |
 | Caregiver-chosen photos | `files/memory_photos/<random>.img` | Copied so they keep working offline |
 | Caregiver-chosen songs | `files/radio_tracks/<random>.audio` | Same |
 
-Nothing else is stored: no names, ages, health information, timings, error counts, scores or activity log. Deleting a page or song in Caregiver tools deletes its private copy. Uninstalling the app or using "Clear storage" removes everything.
+The chosen bus number is kept only while that ride lasts (it is printed on the ticket) and is discarded on arrival. It is never scored or summarised. Nothing else is stored: no names, ages, health information, timings, error counts, scores or activity log. Deleting a page or song in Caregiver tools deletes its private copy. Uninstalling the app or using "Clear storage" removes everything.
 
 ## What leaves the device
 

@@ -139,6 +139,7 @@ class SliceInstrumentedTest {
         shown("scene_veranda")
         tap("hotspot_sewing_corner")
         tap("hotspot_sewing_machine")
+        tap("sew_start_over") // earlier sessions may have left a piece in progress (progress is kept on purpose)
         tap("fabric_cloth_indigo_dots")
         tap("kind_pillow")
         tap("sew_do_it")
