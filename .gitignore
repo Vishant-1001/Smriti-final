@@ -44,3 +44,6 @@ docs/screenshots/roborazzi/
 # Python bytecode
 __pycache__/
 *.pyc
+
+# The SCOPE annex as handed over; a tracked copy lives in docs/spec/
+/SCOPE_V2_RESEARCH_ANNEX_v2.1.md
