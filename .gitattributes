@@ -1,0 +1,9 @@
+# Keep LF everywhere so gradlew and scripts work on Linux/macOS; Windows batch files need CRLF.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.webp binary
+*.ttf binary
+*.ogg binary
+*.jar binary
+*.zip binary
