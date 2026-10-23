@@ -124,3 +124,12 @@ Screenshots are in `docs/screenshots/emulator/`. The `q*` files are portrait Pas
 
 **Benchmark verdict: pre-registered criterion NOT met.** See `docs/scope/README.md`.
 
+### SCOPE protocol v2 (diagnosis and corrected decision rule)
+
+```
+./gradlew :scope:test               # 31 passed, 0 failed (DecisionRuleV2Test 8, ScopeEngineTest 18, SimulatorTest 5)
+./gradlew :scope:reproduceScopeV1   # v1 results reproduced identically (diff empty apart from runtime)
+./gradlew :scope:runScopeV2Tuning   # development seeds 1–40 → frozen policy
+./gradlew :scope:runScopeV2Test     # fresh seeds 2001–2060 → v2 verdict: NO-GO
+```
+

@@ -1,5 +1,7 @@
 # SCOPE v2.1: experimental preference-learning engine
 
+> **Update (protocol v2):** see [`v2/README.md`](v2/README.md). The v1 abstention was diagnosed as a structurally unreachable gate: it used a predictive choice probability, best vs runner-up. A corrected rule (posterior P(better than manual)) and a simpler 8-parameter model were tested on fresh held-out synthetic users. **v2 verdict: NO-GO** (safety under noisy feedback, coverage and stability gates failed). The v1 results below are unchanged.
+
 **Status: experimental research code. Disabled by default (`ScopeFlags.ENABLED_BY_DEFAULT = false`). The SMRITI app does not depend on it, so gameplay is unchanged. Not scientifically validated, not clinically beneficial, and not shown to beat a rule-based baseline.**
 
 Design basis: [`docs/spec/SCOPE_V2_RESEARCH_ANNEX_v2.1.md`](../spec/SCOPE_V2_RESEARCH_ANNEX_v2.1.md). Frozen protocol: [`SCOPE_PROTOCOL.md`](SCOPE_PROTOCOL.md). Generated results: [`SCOPE_BENCHMARK_RESULTS.md`](SCOPE_BENCHMARK_RESULTS.md).
