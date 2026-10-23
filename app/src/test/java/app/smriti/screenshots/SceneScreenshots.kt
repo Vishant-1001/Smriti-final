@@ -15,6 +15,13 @@ import app.smriti.domain.SaveData
 import app.smriti.domain.SceneId
 import app.smriti.domain.Settings
 import app.smriti.domain.TextSize
+import app.smriti.domain.CookingState
+import app.smriti.domain.Creation
+import app.smriti.domain.DishwashState
+import app.smriti.domain.SewKind
+import app.smriti.domain.SewingState
+import app.smriti.domain.ShoppingState
+import app.smriti.domain.TripState
 import app.smriti.testing.TestGraph
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.After
@@ -49,11 +56,18 @@ abstract class SceneScreenshots(private val device: String) {
         SceneId.VERANDA -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA)
         SceneId.BEDROOM -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.BEDROOM)
         SceneId.CAREGIVER -> listOf(SceneId.TITLE, SceneId.CAREGIVER)
+        SceneId.KITCHEN, SceneId.SEWING, SceneId.TRIP, SceneId.MARKET -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, scene)
+        SceneId.COOKING, SceneId.DISHES -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.KITCHEN, scene)
+        SceneId.STITCH -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.SEWING, scene)
+        SceneId.BUS_STOP -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.TRIP, scene)
+        SceneId.BUS -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.TRIP, SceneId.BUS_STOP, scene)
+        SceneId.STALL_PRODUCE, SceneId.STALL_SPICE, SceneId.STALL_FLOWER, SceneId.STALL_CLOTH ->
+            listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.MARKET, scene)
         else -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.BEDROOM, scene)
     }
 
-    private fun open(scene: SceneId, settings: Settings = Settings(), voice: Boolean = false) {
-        val save = SaveData(nav = NavState(stackTo(scene)), settings = settings)
+    private fun open(scene: SceneId, settings: Settings = Settings(), voice: Boolean = false, edit: (SaveData) -> SaveData = { it }) {
+        val save = edit(SaveData(nav = NavState(stackTo(scene)), settings = settings))
         SmritiApp.graphFactory = { TestGraph(it, save, voiceAvailable = voice) }
         scenario = ActivityScenario.launch(MainActivity::class.java)
         compose.waitForIdle()
@@ -111,6 +125,64 @@ abstract class SceneScreenshots(private val device: String) {
         shot("12_radio_playing_en")
         tap("hud_back")
         shot("13_bedroom_mini_player_en")
+    }
+
+    // ---- Pass A scenes
+    private val en = Settings(language = AppLanguage.ENGLISH)
+
+    @Test fun kitchen() { open(SceneId.KITCHEN); shot("20_kitchen_ta") }
+
+    @Test
+    fun cookingMidway() {
+        open(SceneId.COOKING, en) { it.copy(cooking = CookingState().doStep().doStep()) }
+        shot("21_cooking_step3_en")
+    }
+
+    @Test
+    fun dishesGuided() {
+        open(SceneId.DISHES, en) { it.copy(dishes = DishwashState(guided = true).tap("plate_1").tap("plate_1").tap("cup_1")) }
+        shot("22_dishes_guided_en")
+    }
+
+    @Test
+    fun sewingWithCreation() {
+        open(SceneId.SEWING) { it.copy(creations = listOf(Creation("c1", SewKind.BAG, "cloth_leaf_print"), Creation("c2", SewKind.PILLOW, "cloth_indigo_dots"))) }
+        shot("23_sewing_ta")
+    }
+
+    @Test
+    fun stitching() {
+        open(SceneId.STITCH, en) { it.copy(sewing = SewingState().chooseFabric("cloth_maroon_checks").chooseKind(SewKind.SHIRT).stitch()) }
+        shot("24_stitch_en")
+    }
+
+    @Test fun trip() { open(SceneId.TRIP, en) { it.copy(trip = TripState()) }; shot("25_trip_en") }
+    @Test fun busStop() { open(SceneId.BUS_STOP) { it.copy(trip = TripState()) }; shot("26_bus_stop_ta") }
+
+    @Test
+    fun busTicket() {
+        open(SceneId.BUS, en) { it.copy(trip = TripState().board(27).talkToConductor().addMoney(5)) }
+        shot("27_bus_ticket_en")
+    }
+
+    @Test fun market() { open(SceneId.MARKET); shot("28_market_ta") }
+    @Test fun stallProduce() { open(SceneId.STALL_PRODUCE); shot("29_stall_produce_ta") }
+    @Test fun stallSpice() { open(SceneId.STALL_SPICE, en); shot("30_stall_spice_en") }
+    @Test fun stallFlower() { open(SceneId.STALL_FLOWER); shot("31_stall_flower_ta") }
+    @Test fun stallCloth() { open(SceneId.STALL_CLOTH, en); shot("32_stall_cloth_en") }
+
+    @Test
+    fun shoppingPanelWithHints() {
+        open(SceneId.STALL_PRODUCE, en) { it.copy(shopping = ShoppingState().addToBag("tomato").addToBag("onion")) }
+        tap("hud_list")
+        shot("33_shopping_hints_en")
+    }
+
+    @Test
+    fun itemCard() {
+        open(SceneId.STALL_FLOWER, en)
+        tap("hotspot_jasmine")
+        shot("34_item_card_en")
     }
 }
 

@@ -32,6 +32,7 @@ object SmritiColors {
     val Indigo = Color(0xFF34427E)
     val Maroon = Color(0xFF7A2633)
     val Brass = Color(0xFFE2B04A)
+    val Wood = Color(0xFF8A5230)
     val HotspotRing = Color(0xFFFFF6DC)
     val Scrim = Color(0x993A2418)
 }

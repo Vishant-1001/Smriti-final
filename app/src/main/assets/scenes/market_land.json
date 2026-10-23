@@ -1,0 +1,51 @@
+{
+  "scene": "market",
+  "variant": "land",
+  "image": "scenes/market_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.0396,
+    "top": 0.3222,
+    "right": 0.9604,
+    "bottom": 0.8833
+  },
+  "hotspots": [
+    {
+      "id": "stall_produce",
+      "rect": {
+        "left": 0.0604,
+        "top": 0.45,
+        "right": 0.2833,
+        "bottom": 0.8463
+      }
+    },
+    {
+      "id": "stall_spice",
+      "rect": {
+        "left": 0.3063,
+        "top": 0.3593,
+        "right": 0.4854,
+        "bottom": 0.6778
+      }
+    },
+    {
+      "id": "stall_flower",
+      "rect": {
+        "left": 0.5146,
+        "top": 0.3593,
+        "right": 0.6937,
+        "bottom": 0.6778
+      }
+    },
+    {
+      "id": "stall_cloth",
+      "rect": {
+        "left": 0.7167,
+        "top": 0.45,
+        "right": 0.9396,
+        "bottom": 0.8463
+      }
+    }
+  ]
+}

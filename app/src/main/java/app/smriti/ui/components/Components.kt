@@ -50,6 +50,9 @@ import app.smriti.ui.theme.LocalSystemFontScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import app.smriti.domain.DialogueLine
+import app.smriti.domain.LineArg
 import app.smriti.ui.theme.LocalSmritiPrefs
 import app.smriti.ui.theme.SmritiColors
 import kotlinx.coroutines.delay
@@ -222,7 +225,7 @@ fun Badge(text: String, color: Color, modifier: Modifier = Modifier) {
  * animation); with reduced motion, or when silent, the neutral frame is shown.
  */
 @Composable
-fun GuidePortrait(speaking: Boolean, size: Dp, modifier: Modifier = Modifier) {
+fun GuidePortrait(speaking: Boolean, size: Dp, modifier: Modifier = Modifier, portrait: String = "guide") {
     val reduced = LocalSmritiPrefs.current.reducedMotion
     var open by remember { mutableStateOf(false) }
     LaunchedEffect(speaking, reduced) {
@@ -234,8 +237,8 @@ fun GuidePortrait(speaking: Boolean, size: Dp, modifier: Modifier = Modifier) {
             }
         }
     }
-    val neutral = rememberAssetBitmap("characters/guide_neutral.webp")
-    val talking = rememberAssetBitmap("characters/guide_speaking.webp")
+    val neutral = rememberAssetBitmap("characters/${portrait}_neutral.webp")
+    val talking = rememberAssetBitmap("characters/${portrait}_speaking.webp")
     val frame = if (open) talking ?: neutral else neutral
     Box(
         modifier
@@ -257,4 +260,45 @@ fun RowSpacer(w: Dp = 12.dp) = Spacer(Modifier.width(w))
 @Composable
 fun ButtonRow(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) { content() }
+}
+
+/** A bundled illustration (sprite) by asset path; draws nothing if the file is missing. */
+@Composable
+fun Sprite(path: String, modifier: Modifier = Modifier, contentDescription: String? = null) {
+    val bmp = rememberAssetBitmap(path)
+    if (bmp != null) Image(bmp, contentDescription = contentDescription, contentScale = ContentScale.Fit, modifier = modifier)
+    else Box(modifier)
+}
+
+/** A dialogue line with its arguments resolved in the current language. */
+@Composable
+fun lineText(line: DialogueLine): String {
+    val args = line.args.map { a ->
+        when (a) {
+            is LineArg.Res -> stringResource(a.id)
+            is LineArg.Num -> a.value.toString()
+        }
+    }
+    return if (args.isEmpty()) stringResource(line.text) else stringResource(line.text, *args.toTypedArray())
+}
+
+/**
+ * Compact labelled action for activity toolbars (Repeat, Show me, Do it for me, Undo, Start again).
+ * Same size everywhere so the controls are predictable.
+ */
+@Composable
+fun ToolButton(label: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.defaultMinSize(minWidth = 88.dp, minHeight = 64.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = if (enabled) SmritiColors.Paper else SmritiColors.PaperDim,
+        border = BorderStroke(2.dp, SmritiColors.Outline.copy(alpha = if (enabled) 1f else 0.4f)),
+    ) {
+        Column(Modifier.padding(horizontal = 8.dp, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(icon, contentDescription = null, tint = SmritiColors.Ink.copy(alpha = if (enabled) 1f else 0.4f), modifier = Modifier.size(26.dp))
+            Text(label, style = MaterialTheme.typography.labelMedium, color = SmritiColors.Ink.copy(alpha = if (enabled) 1f else 0.4f), textAlign = TextAlign.Center)
+        }
+    }
 }

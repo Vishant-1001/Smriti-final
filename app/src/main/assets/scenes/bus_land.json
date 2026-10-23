@@ -1,0 +1,24 @@
+{
+  "scene": "bus",
+  "variant": "land",
+  "image": "scenes/bus_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.4154,
+    "top": 0.253,
+    "right": 0.5846,
+    "bottom": 0.677
+  },
+  "hotspots": [
+    {
+      "id": "conductor",
+      "rect": {
+        "left": 0.4363,
+        "top": 0.29,
+        "right": 0.5638,
+        "bottom": 0.64
+      }
+    }
+  ]
+}

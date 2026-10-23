@@ -35,7 +35,7 @@ class StringsParityTest {
     @Test
     fun `tamil strings are actually written in tamil script`() {
         val ta = load("values-ta")
-        val latinOnly = setOf("lang_english")
+        val latinOnly = setOf("lang_english", "money")
         val tamilBlock = Regex("[\\u0B80-\\u0BFF]")
         ta.filterKeys { it !in latinOnly }.forEach { (k, v) -> assertTrue("$k is not Tamil: $v", tamilBlock.containsMatchIn(v)) }
     }

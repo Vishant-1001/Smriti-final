@@ -172,13 +172,15 @@ class GameViewModelTest {
     }
 
     @Test
-    fun `rooms not built yet give an honest neutral message and do not navigate`() {
+    fun `kitchen and sewing corner are real rooms reachable from the veranda`() {
         val vm = vm()
         vm.dispatch(GameAction.Start)
         vm.dispatch(GameAction.GoTo(SceneId.VERANDA))
-        vm.dispatch(GameAction.NotYetAvailable(GameAction.Place.KITCHEN))
-        assertEquals(SceneId.VERANDA, vm.state.value.scene)
-        assertEquals("kitchen_not_ready", vm.state.value.dialogue?.line?.id)
+        vm.dispatch(GameAction.GoTo(SceneId.KITCHEN))
+        assertEquals(SceneId.KITCHEN, vm.state.value.scene)
+        vm.dispatch(GameAction.Back)
+        vm.dispatch(GameAction.GoTo(SceneId.SEWING))
+        assertEquals(SceneId.SEWING, vm.state.value.scene)
     }
 
     @Test

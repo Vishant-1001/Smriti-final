@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         fun factory(graph: AppGraph): ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                GameViewModel(graph.save, graph.createVoice(), graph.createRadioPlayer(), graph.strings, graph.mediaImporter)
+                GameViewModel(graph.save, graph.createVoice(), graph.createRadioPlayer(), graph.strings, graph.mediaImporter, graph.layouts)
             }
         }
     }

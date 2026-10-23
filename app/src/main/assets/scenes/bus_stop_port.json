@@ -1,0 +1,51 @@
+{
+  "scene": "bus_stop",
+  "variant": "port",
+  "image": "scenes/bus_stop_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0685,
+    "top": 0.4725,
+    "right": 0.9037,
+    "bottom": 0.8717
+  },
+  "hotspots": [
+    {
+      "id": "bus_1",
+      "rect": {
+        "left": 0.1056,
+        "top": 0.4892,
+        "right": 0.45,
+        "bottom": 0.6592
+      }
+    },
+    {
+      "id": "bus_2",
+      "rect": {
+        "left": 0.5222,
+        "top": 0.4892,
+        "right": 0.8667,
+        "bottom": 0.6592
+      }
+    },
+    {
+      "id": "bus_3",
+      "rect": {
+        "left": 0.1056,
+        "top": 0.685,
+        "right": 0.45,
+        "bottom": 0.855
+      }
+    },
+    {
+      "id": "bus_4",
+      "rect": {
+        "left": 0.5222,
+        "top": 0.685,
+        "right": 0.8667,
+        "bottom": 0.855
+      }
+    }
+  ]
+}

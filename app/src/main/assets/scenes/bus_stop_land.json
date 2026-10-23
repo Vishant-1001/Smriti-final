@@ -1,0 +1,51 @@
+{
+  "scene": "bus_stop",
+  "variant": "land",
+  "image": "scenes/bus_stop_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.3198,
+    "top": 0.3926,
+    "right": 1.0,
+    "bottom": 0.7833
+  },
+  "hotspots": [
+    {
+      "id": "bus_1",
+      "rect": {
+        "left": 0.3406,
+        "top": 0.4296,
+        "right": 0.5031,
+        "bottom": 0.7463
+      }
+    },
+    {
+      "id": "bus_2",
+      "rect": {
+        "left": 0.5031,
+        "top": 0.4296,
+        "right": 0.6656,
+        "bottom": 0.7463
+      }
+    },
+    {
+      "id": "bus_3",
+      "rect": {
+        "left": 0.6656,
+        "top": 0.4296,
+        "right": 0.8281,
+        "bottom": 0.7463
+      }
+    },
+    {
+      "id": "bus_4",
+      "rect": {
+        "left": 0.8281,
+        "top": 0.4296,
+        "right": 0.9906,
+        "bottom": 0.7463
+      }
+    }
+  ]
+}

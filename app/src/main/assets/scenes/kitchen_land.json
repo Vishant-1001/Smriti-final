@@ -1,0 +1,33 @@
+{
+  "scene": "kitchen",
+  "variant": "land",
+  "image": "scenes/kitchen_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.0773,
+    "top": 0.2778,
+    "right": 0.8862,
+    "bottom": 0.6852
+  },
+  "hotspots": [
+    {
+      "id": "cook_area",
+      "rect": {
+        "left": 0.0981,
+        "top": 0.3148,
+        "right": 0.4419,
+        "bottom": 0.6389
+      }
+    },
+    {
+      "id": "sink",
+      "rect": {
+        "left": 0.5946,
+        "top": 0.4074,
+        "right": 0.8654,
+        "bottom": 0.6481
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "scene": "sewing",
+  "variant": "port",
+  "image": "scenes/sewing_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0862,
+    "top": 0.1958,
+    "right": 0.9707,
+    "bottom": 0.8169
+  },
+  "hotspots": [
+    {
+      "id": "sewing_machine",
+      "rect": {
+        "left": 0.1232,
+        "top": 0.5487,
+        "right": 0.7168,
+        "bottom": 0.8002
+      }
+    },
+    {
+      "id": "creations_rack",
+      "rect": {
+        "left": 0.5263,
+        "top": 0.2125,
+        "right": 0.9337,
+        "bottom": 0.4317
+      }
+    }
+  ]
+}

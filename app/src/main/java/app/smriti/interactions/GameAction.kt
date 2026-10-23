@@ -1,6 +1,8 @@
 package app.smriti.interactions
 
 import app.smriti.domain.SceneId
+import app.smriti.domain.StallId
+import app.smriti.domain.TripDirection
 
 /**
  * Every player intent. Scene hotspots, the Guide's "Places here" list, HUD buttons and tests all
@@ -16,8 +18,23 @@ sealed interface GameAction {
     data object OpenDestinationChooser : GameAction
     data object CloseDestinationChooser : GameAction
 
-    /** A place that exists in the house but is not built in this version (honest, neutral message). */
-    data class NotYetAvailable(val place: Place) : GameAction
+    /** Opens the travel screen (shopping list + bus or go straight there). */
+    data class PlanTrip(val direction: TripDirection) : GameAction
+    data object TakeBus : GameAction
+    data object ArriveDirectly : GameAction
+    data class ChooseBus(val number: Int) : GameAction
+    data object TalkToConductor : GameAction
+    data object SkipRide : GameAction
+    data object SayBusNumber : GameAction
+
+    data class TalkToVendor(val stall: StallId) : GameAction
+    data class SelectItem(val itemId: String) : GameAction
+    data object CloseItem : GameAction
+    data object OpenShopping : GameAction
+    data object CloseShopping : GameAction
+
+    data object OpenCreations : GameAction
+    data object CloseCreations : GameAction
 
     data object OpenGuide : GameAction
     data object CloseGuide : GameAction
@@ -29,6 +46,4 @@ sealed interface GameAction {
 
     data object OpenSettings : GameAction
     data object CloseSettings : GameAction
-
-    enum class Place { KITCHEN, SEWING_CORNER }
 }

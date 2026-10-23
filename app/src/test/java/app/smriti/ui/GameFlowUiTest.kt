@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.smriti.MainActivity
 import app.smriti.domain.AppLanguage
@@ -32,6 +33,8 @@ class GameFlowUiTest {
     val chain: RuleChain = RuleChain.outerRule(graphRule).around(compose)
 
     private fun tap(tag: String) {
+        // Like a person would, scroll the control into view first (no-op outside scrolling content).
+        runCatching { compose.onNodeWithTag(tag, useUnmergedTree = true).performScrollTo() }
         compose.onNodeWithTag(tag, useUnmergedTree = true).performClick()
         compose.waitForIdle()
     }
@@ -136,14 +139,23 @@ class GameFlowUiTest {
     }
 
     @Test
-    fun kitchenIsHonestlyNotReady() {
+    fun kitchenCoffeeAndDishesThroughTheRealUi() {
         tap("start")
         tap("hotspot_front_door")
         tap("hotspot_kitchen_door")
-        assertShown("dialogue_panel")
-        assertShown("scene_veranda")
-        tap("dialogue_ok")
-        compose.onNodeWithTag("dialogue_panel").assertDoesNotExist()
+        assertShown("scene_kitchen")
+        tap("hotspot_cook_area")
+        assertShown("cook_instruction")
+        tap("tool_coffee_powder")
+        tap("cook_do_it")
+        tap("cook_do_it")
+        tap("tool_milk")
+        assertShown("cook_again")
+        tap("hud_back")
+        tap("hotspot_sink")
+        listOf("plate_1", "plate_2", "cup_1", "bowl_1").forEach { tap("dish_$it") }
+        tap("dishes_do_all")
+        compose.onNodeWithTag("rack_bowl_1", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
     }
 
     @Test

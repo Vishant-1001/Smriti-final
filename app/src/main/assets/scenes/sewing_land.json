@@ -1,0 +1,33 @@
+{
+  "scene": "sewing",
+  "variant": "land",
+  "image": "scenes/sewing_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.1853,
+    "top": 0.1944,
+    "right": 0.925,
+    "bottom": 0.8699
+  },
+  "hotspots": [
+    {
+      "id": "sewing_machine",
+      "rect": {
+        "left": 0.2061,
+        "top": 0.3176,
+        "right": 0.5139,
+        "bottom": 0.8329
+      }
+    },
+    {
+      "id": "creations_rack",
+      "rect": {
+        "left": 0.6958,
+        "top": 0.2315,
+        "right": 0.9042,
+        "bottom": 0.7093
+      }
+    }
+  ]
+}

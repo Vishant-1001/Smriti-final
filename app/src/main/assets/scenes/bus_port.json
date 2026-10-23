@@ -1,0 +1,24 @@
+{
+  "scene": "bus",
+  "variant": "port",
+  "image": "scenes/bus_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.3181,
+    "top": 0.3121,
+    "right": 0.6819,
+    "bottom": 0.5467
+  },
+  "hotspots": [
+    {
+      "id": "conductor",
+      "rect": {
+        "left": 0.3552,
+        "top": 0.3287,
+        "right": 0.6448,
+        "bottom": 0.53
+      }
+    }
+  ]
+}

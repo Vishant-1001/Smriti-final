@@ -37,7 +37,13 @@ object SceneNavigator {
     }
 
     fun homeFor(state: NavState): SceneId =
-        if (state.stack.any { it.isInsideHouse }) SceneId.VERANDA else SceneId.EXTERIOR
+        if (state.stack.any { it.isInsideHouse || it == SceneId.VERANDA }) SceneId.VERANDA else SceneId.EXTERIOR
+
+    /**
+     * Arriving somewhere by bus or directly. The trip screens are dropped from the stack, so Back at
+     * the market leads home rather than back onto the bus.
+     */
+    fun arriveAt(target: SceneId): NavState = NavState(baseStackTo(target))
 
     /** Ending a session returns to the title screen; nothing the user made is lost. */
     fun endSession(): NavState = NavState(listOf(SceneId.TITLE))
@@ -46,6 +52,13 @@ object SceneNavigator {
         SceneId.TITLE -> listOf(SceneId.TITLE)
         SceneId.EXTERIOR -> listOf(SceneId.TITLE, SceneId.EXTERIOR)
         SceneId.VERANDA -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA)
+        SceneId.KITCHEN, SceneId.SEWING, SceneId.BEDROOM, SceneId.MARKET, SceneId.TRIP ->
+            listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, target)
+        SceneId.COOKING, SceneId.DISHES -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.KITCHEN, target)
+        SceneId.STITCH -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.SEWING, target)
+        SceneId.MEMORY_BOOK, SceneId.RADIO -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.BEDROOM, target)
+        SceneId.STALL_PRODUCE, SceneId.STALL_SPICE, SceneId.STALL_FLOWER, SceneId.STALL_CLOTH ->
+            listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, SceneId.MARKET, target)
         else -> listOf(SceneId.TITLE, SceneId.EXTERIOR, SceneId.VERANDA, target)
     }
 

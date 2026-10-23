@@ -1,0 +1,60 @@
+{
+  "scene": "stall_produce",
+  "variant": "port",
+  "image": "scenes/stall_produce_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0441,
+    "top": 0.2833,
+    "right": 0.9559,
+    "bottom": 0.8694
+  },
+  "hotspots": [
+    {
+      "id": "tomato",
+      "rect": {
+        "left": 0.0811,
+        "top": 0.54,
+        "right": 0.4589,
+        "bottom": 0.6735
+      }
+    },
+    {
+      "id": "banana",
+      "rect": {
+        "left": 0.5411,
+        "top": 0.54,
+        "right": 0.9189,
+        "bottom": 0.6735
+      }
+    },
+    {
+      "id": "brinjal",
+      "rect": {
+        "left": 0.0811,
+        "top": 0.7192,
+        "right": 0.4589,
+        "bottom": 0.8527
+      }
+    },
+    {
+      "id": "onion",
+      "rect": {
+        "left": 0.5411,
+        "top": 0.7192,
+        "right": 0.9189,
+        "bottom": 0.8527
+      }
+    },
+    {
+      "id": "vendor",
+      "rect": {
+        "left": 0.355,
+        "top": 0.3,
+        "right": 0.645,
+        "bottom": 0.5208
+      }
+    }
+  ]
+}

@@ -15,8 +15,11 @@ ORIGINAL = "Original; drawn as code in art_source/generator (SVG rendered with r
 
 USE = {
     "scenes": "Scene background",
-    "characters": "SMRITI Guide sprite frame",
-    "props": "Radio screen illustration",
+    "characters": "Character bust frame (Guide, conductor, vendors)",
+    "props": "Prop illustration (radio, sewing machine)",
+    "items": "Shop item / list / bag picture",
+    "kitchen": "Kitchen activity utensil or dish (one file per state)",
+    "sewing": "Sewing swatch, template or finished creation",
     "memory": "Memory Book sample page picture",
 }
 

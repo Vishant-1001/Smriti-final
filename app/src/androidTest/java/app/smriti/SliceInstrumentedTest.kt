@@ -112,6 +112,42 @@ class SliceInstrumentedTest {
     }
 
     @Test
+    fun marketRoundTripByBusThenSewWithBoughtCloth() {
+        toTitle()
+        tap("start")
+        tap("hotspot_front_door")
+        tap("hotspot_front_door")
+        tap("destination_market")
+        shown("scene_trip")
+        tap("trip_bus")
+        shown("bus_cue_number")
+        tap("hotspot_bus_4") // not the suggested number: boarding still works
+        shown("scene_bus")
+        tap("bus_talk")
+        tap("dialogue_ok")
+        tap("money_20")
+        tap("pay")
+        shown("pay_change")
+        tap("bus_arrive")
+        shown("scene_market")
+        tap("hotspot_stall_cloth")
+        tap("hotspot_cloth_indigo_dots")
+        tap("item_add")
+        tap("hud_back")
+        tap("market_go_home")
+        tap("trip_direct")
+        shown("scene_veranda")
+        tap("hotspot_sewing_corner")
+        tap("hotspot_sewing_machine")
+        tap("fabric_cloth_indigo_dots")
+        tap("kind_pillow")
+        tap("sew_do_it")
+        tap("sew_keep")
+        tap("hud_back")
+        shown("scene_sewing")
+    }
+
+    @Test
     fun guideHelpAlwaysShowsSubtitle() {
         toTitle()
         tap("start")

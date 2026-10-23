@@ -1,0 +1,33 @@
+{
+  "scene": "kitchen",
+  "variant": "port",
+  "image": "scenes/kitchen_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0685,
+    "top": 0.3013,
+    "right": 0.9315,
+    "bottom": 0.8187
+  },
+  "hotspots": [
+    {
+      "id": "cook_area",
+      "rect": {
+        "left": 0.1056,
+        "top": 0.3179,
+        "right": 0.8944,
+        "bottom": 0.505
+      }
+    },
+    {
+      "id": "sink",
+      "rect": {
+        "left": 0.1898,
+        "top": 0.6637,
+        "right": 0.8102,
+        "bottom": 0.8021
+      }
+    }
+  ]
+}

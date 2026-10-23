@@ -1,0 +1,51 @@
+{
+  "scene": "stall_cloth",
+  "variant": "land",
+  "image": "scenes/stall_cloth_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.0479,
+    "top": 0.2037,
+    "right": 0.9521,
+    "bottom": 0.9773
+  },
+  "hotspots": [
+    {
+      "id": "cloth_indigo_dots",
+      "rect": {
+        "left": 0.0688,
+        "top": 0.6667,
+        "right": 0.2646,
+        "bottom": 0.9403
+      }
+    },
+    {
+      "id": "cloth_maroon_checks",
+      "rect": {
+        "left": 0.4021,
+        "top": 0.6667,
+        "right": 0.5979,
+        "bottom": 0.9403
+      }
+    },
+    {
+      "id": "cloth_leaf_print",
+      "rect": {
+        "left": 0.7354,
+        "top": 0.6667,
+        "right": 0.9313,
+        "bottom": 0.9403
+      }
+    },
+    {
+      "id": "vendor",
+      "rect": {
+        "left": 0.4335,
+        "top": 0.2407,
+        "right": 0.5665,
+        "bottom": 0.6389
+      }
+    }
+  ]
+}

@@ -47,6 +47,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.smriti.R
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
+import app.smriti.data.LayoutVariant
+import app.smriti.domain.PxRect
+import app.smriti.domain.TripDirection
+import app.smriti.domain.TripPhase
+import app.smriti.domain.TripState
+import app.smriti.ui.components.BigButton
+import app.smriti.ui.components.Sprite
+import app.smriti.ui.overlays.Scrim
+import app.smriti.ui.overlays.blockTaps
+import app.smriti.ui.screens.BusCue
+import app.smriti.ui.screens.BusPanel
+import app.smriti.ui.screens.CookingScreen
+import app.smriti.ui.screens.CreationsGallery
+import app.smriti.ui.screens.DishesScreen
+import app.smriti.ui.screens.ItemCard
+import app.smriti.ui.screens.ShoppingPanel
+import app.smriti.ui.screens.StitchScreen
+import app.smriti.ui.screens.TripScreen
+import kotlin.math.roundToInt
 import app.smriti.data.MediaStorage
 import app.smriti.data.SceneLayoutSource
 import app.smriti.domain.PlaybackStatus
@@ -121,7 +143,13 @@ private fun GameScreen(
         Crossfade(targetState = state.scene, animationSpec = if (reduced) snap() else tween(350), label = "scene") { scene ->
             when {
                 scene == SceneId.TITLE -> TitleScreen(onAction)
-                scene.isIllustratedScene -> IllustratedScene(scene, layouts, state.showNames, onAction, Modifier.testTag("scene_${scene.name.lowercase()}")) { guideOnRight ->
+                scene.isIllustratedScene -> IllustratedScene(
+                    scene, layouts, state.showNames, onAction, Modifier.testTag("scene_${scene.name.lowercase()}"),
+                    highlight = state.helpers.highlight,
+                    // In tall layouts the bus cue sits above the buses, so keep room for it.
+                    extraTop = if (scene == SceneId.BUS_STOP && maxHeight > maxWidth) 150.dp else 0.dp,
+                    decorations = { rects -> SceneDecorations(scene, state, rects) },
+                ) { guideOnRight ->
                     SceneCorners(state, onAction, vm, guideOnRight)
                 }
                 else -> Column(Modifier.fillMaxSize().safeDrawingPadding()) {
@@ -138,6 +166,21 @@ private fun GameScreen(
                                 Modifier.testTag("scene_radio"),
                             )
                             SceneId.CAREGIVER -> CaregiverScreen(state.memoryBook, state.playlist, caregiverActions, Modifier.testTag("scene_caregiver"))
+                            SceneId.COOKING -> CookingScreen(
+                                state.cooking, state.helpers.highlight, vm::cook, vm::cookRepeat, vm::cookShowMe, vm::cookDoStep, vm::cookUndo, vm::cookReset,
+                                Modifier.testTag("scene_cooking"),
+                            )
+                            SceneId.DISHES -> DishesScreen(state.dishes, vm::dishTap, vm::dishesGuided, vm::dishesDoAll, vm::dishesReset, Modifier.testTag("scene_dishes"))
+                            SceneId.STITCH -> StitchScreen(
+                                state.sewing, state.shopping.fabrics, state.helpers.highlight,
+                                vm::chooseFabric, vm::chooseKind, vm::stitch, { vm.showMe("stitch") }, vm::sewDoItForMe, vm::sewUndo, vm::sewStartOver, vm::sewKeep,
+                                Modifier.testTag("scene_stitch"),
+                            )
+                            SceneId.TRIP -> TripScreen(
+                                state.trip?.direction ?: TripDirection.TO_MARKET, state.shopping,
+                                { onAction(GameAction.TakeBus) }, { onAction(GameAction.ArriveDirectly) },
+                                Modifier.testTag("scene_trip"),
+                            )
                             else -> Unit
                         }
                     }
@@ -152,8 +195,34 @@ private fun GameScreen(
             MiniPlayer(state, vm, Modifier.align(Alignment.BottomEnd).safeDrawingPadding().padding(16.dp))
         }
 
+        // Travel controls drawn over the illustrated bus stop and bus.
+        val hudTop = if (narrow) 152.dp else 96.dp
+        if (state.scene == SceneId.BUS_STOP && state.overlay == null) {
+            BusCue(
+                { onAction(GameAction.SayBusNumber) },
+                Modifier.align(if (maxWidth > maxHeight) Alignment.TopStart else Alignment.TopCenter).safeDrawingPadding().padding(start = 16.dp, end = 16.dp, top = hudTop),
+            )
+        }
+        if (state.scene == SceneId.BUS && state.overlay == null) {
+            val trip = state.trip ?: TripState(phase = TripPhase.ON_BUS)
+            val beforeTicket = trip.phase == TripPhase.ON_BUS || trip.phase == TripPhase.AT_STOP
+            BusPanel(
+                trip, state.helpers.highlight,
+                onTalk = { onAction(GameAction.TalkToConductor) }, onSkip = { onAction(GameAction.SkipRide) },
+                onMoney = vm::addMoney, onClear = vm::clearTray, onPay = vm::pay, onShowMe = { vm.showMe("money_${TripState.FARE}") },
+                onPayForMe = vm::payForMe, onArrive = vm::arriveFromBus,
+                modifier = Modifier
+                    .then(if (beforeTicket) Modifier.widthIn(max = 300.dp) else Modifier)
+                    .align(if (narrow) Alignment.BottomCenter else Alignment.BottomEnd)
+                    .safeDrawingPadding()
+                    .padding(start = 16.dp, end = 16.dp, top = hudTop, bottom = if (narrow) 150.dp else 16.dp),
+            )
+        }
+
         state.dialogue?.let { d ->
             val m = when {
+                // On the bus the ticket stays visible at the bottom, so the conductor speaks from the top.
+                state.scene == SceneId.BUS -> Modifier.align(Alignment.TopCenter).safeDrawingPadding().padding(start = 16.dp, end = 16.dp, top = if (narrow) 152.dp else 96.dp)
                 !state.scene.isIllustratedScene -> Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(16.dp)
                 narrow -> Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(start = 16.dp, end = 16.dp, bottom = 120.dp)
                 else -> Modifier.align(Alignment.BottomStart).safeDrawingPadding().padding(start = 132.dp, end = 16.dp, bottom = 16.dp)
@@ -163,6 +232,28 @@ private fun GameScreen(
 
         when (state.overlay) {
             Overlay.GUIDE -> GuidePanel(state.scene, state.showNames, onAction)
+            Overlay.SHOPPING -> Scrim({ onAction(GameAction.CloseShopping) }) {
+                ShoppingPanel(
+                    state.shopping, inStall = state.currentStall != null, atHome = state.isHome,
+                    onHint = { level -> vm.hint(level, if (maxWidth > maxHeight) LayoutVariant.LANDSCAPE else LayoutVariant.PORTRAIT) },
+                    onPutBack = vm::putBack, onUnpack = vm::unpack, onClose = { onAction(GameAction.CloseShopping) },
+                    modifier = Modifier.blockTaps(),
+                )
+            }
+            Overlay.ITEM -> state.helpers.selectedItem?.let { id ->
+                Scrim({ onAction(GameAction.CloseItem) }) {
+                    ItemCard(
+                        id, state.shopping,
+                        onAdd = { vm.addToBag(id); onAction(GameAction.CloseItem) },
+                        onPutBack = { vm.putBack(id); onAction(GameAction.CloseItem) },
+                        onClose = { onAction(GameAction.CloseItem) },
+                        modifier = Modifier.blockTaps(),
+                    )
+                }
+            }
+            Overlay.CREATIONS -> Scrim({ onAction(GameAction.CloseCreations) }) {
+                CreationsGallery(state.creations, Modifier.blockTaps())
+            }
             Overlay.DESTINATION -> DestinationChooser(onAction)
             Overlay.SETTINGS -> SettingsPanel(
                 state.settings, state.currentVoiceAvailability, vm::updateSettings,
@@ -184,6 +275,19 @@ private fun sceneName(scene: SceneId): String = stringResource(
         SceneId.MEMORY_BOOK -> R.string.scene_memory_book
         SceneId.RADIO -> R.string.scene_radio
         SceneId.CAREGIVER -> R.string.scene_caregiver
+        SceneId.KITCHEN -> R.string.scene_kitchen
+        SceneId.COOKING -> R.string.scene_cooking
+        SceneId.DISHES -> R.string.scene_dishes
+        SceneId.SEWING -> R.string.scene_sewing
+        SceneId.STITCH -> R.string.scene_stitch
+        SceneId.TRIP -> R.string.scene_trip
+        SceneId.BUS_STOP -> R.string.scene_bus_stop
+        SceneId.BUS -> R.string.scene_bus
+        SceneId.MARKET -> R.string.scene_market
+        SceneId.STALL_PRODUCE -> R.string.stall_produce
+        SceneId.STALL_SPICE -> R.string.stall_spice
+        SceneId.STALL_FLOWER -> R.string.stall_flower
+        SceneId.STALL_CLOTH -> R.string.stall_cloth
     }
 )
 
@@ -212,11 +316,35 @@ private fun TopBar(state: GameUiState, onAction: (GameAction) -> Unit, guideInBa
                 )
             }
         }
+        // Hints are one tap away in every stall; they open the list with the hint choices.
+        val hintButton: @Composable () -> Unit = {
+            HudButton(stringResource(R.string.hud_hint), SmritiIcons.Help, { onAction(GameAction.OpenShopping) }, Modifier.widthIn(max = 150.dp).testTag("hud_hint"))
+        }
         val endButton: @Composable () -> Unit = {
             HudButton(stringResource(R.string.action_end_session), SmritiIcons.Exit, { onAction(GameAction.EndSession) }, Modifier.widthIn(max = 170.dp).testTag("hud_end"))
         }
         val guide: @Composable () -> Unit = {
             HudButton(stringResource(R.string.action_guide), SmritiIcons.Help, { onAction(GameAction.OpenGuide) }, Modifier.widthIn(max = 170.dp).testTag("hud_guide"))
+        }
+        // Context buttons for this place. On narrow screens they share the second row with the
+        // place name, so the first row (Back, Home, Settings) can never be pushed off screen.
+        val showList = state.scene.isMarket || state.scene == SceneId.TRIP || (state.scene == SceneId.VERANDA && state.shopping.bag.isNotEmpty())
+        val extras: @Composable () -> Unit = {
+            if (guideInBar) guide()
+            if (state.scene == SceneId.EXTERIOR) endButton()
+            if (state.currentStall != null) hintButton()
+            if (state.scene == SceneId.MARKET) {
+                HudButton(
+                    stringResource(R.string.market_go_home), SmritiIcons.Home,
+                    { onAction(GameAction.PlanTrip(TripDirection.TO_HOME)) }, Modifier.widthIn(max = 150.dp).testTag("market_go_home"),
+                )
+            }
+            if (showList) {
+                HudButton(
+                    stringResource(R.string.hud_list) + " ${state.shopping.collectedCount}/${state.shopping.list.size}",
+                    SmritiIcons.List, { onAction(GameAction.OpenShopping) }, Modifier.widthIn(max = 150.dp).testTag("hud_list"),
+                )
+            }
         }
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -226,16 +354,13 @@ private fun TopBar(state: GameUiState, onAction: (GameAction) -> Unit, guideInBa
                     HudButton(stringResource(R.string.action_home), SmritiIcons.Home, { onAction(GameAction.Home) }, Modifier.widthIn(max = 150.dp).testTag("hud_home"))
                 }
                 if (narrow) Spacer(Modifier.weight(1f)) else name(Modifier.weight(1f))
-                if (guideInBar && !narrow) guide()
-                if (state.scene == SceneId.EXTERIOR && !narrow) endButton()
+                if (!narrow) extras()
                 HudButton(stringResource(R.string.action_settings), SmritiIcons.Settings, { onAction(GameAction.OpenSettings) }, Modifier.widthIn(max = 170.dp).testTag("hud_settings"))
             }
-            // Narrow screens: the place name (and the Guide on non-picture screens) get their own row.
             if (narrow) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     name(Modifier.weight(1f))
-                    if (guideInBar) guide()
-                    if (state.scene == SceneId.EXTERIOR) endButton()
+                    extras()
                 }
             }
         }
@@ -249,6 +374,7 @@ private fun BoxScope.SceneCorners(state: GameUiState, onAction: (GameAction) -> 
         state.voiceSpeaking, onAction,
         Modifier.align(if (guideOnRight) Alignment.BottomEnd else Alignment.BottomStart).safeDrawingPadding().padding(16.dp),
     )
+
     if (state.radio.status != PlaybackStatus.STOPPED) {
         val m = Modifier.safeDrawingPadding()
         // Narrow phones have no room beside the Guide, so the player sits above it instead.
@@ -314,5 +440,23 @@ private fun MiniPlayer(state: GameUiState, vm: GameViewModel, modifier: Modifier
                 modifier = Modifier.size(56.dp).semantics { contentDescription = stopLabel }.testTag("mini_stop"),
             ) { Icon(SmritiIcons.Stop, contentDescription = null, tint = SmritiColors.Terracotta) }
         }
+    }
+}
+
+/** Things drawn by the app on top of a scene, anchored to hotspots: made items hang on the sewing rack. */
+@Composable
+private fun BoxScope.SceneDecorations(scene: SceneId, state: GameUiState, rects: Map<String, PxRect>) {
+    if (scene != SceneId.SEWING) return
+    val rack = rects["creations_rack"] ?: return
+    val density = LocalDensity.current
+    state.creations.takeLast(2).forEachIndexed { i, c ->
+        val w = rack.width / 2f
+        Sprite(
+            c.sprite,
+            Modifier
+                .offset { IntOffset((rack.left + i * w + w * 0.05f).roundToInt(), (rack.top + rack.height * 0.12f).roundToInt()) }
+                .size(with(density) { (w * 0.9f).toDp() })
+                .testTag("rack_creation_${c.id}"),
+        )
     }
 }

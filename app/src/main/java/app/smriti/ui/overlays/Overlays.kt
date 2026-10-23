@@ -55,12 +55,14 @@ import app.smriti.domain.AppLanguage
 import app.smriti.domain.SceneId
 import app.smriti.domain.Settings
 import app.smriti.domain.TextSize
+import app.smriti.domain.TripDirection
 import app.smriti.interactions.GameAction
 import app.smriti.interactions.HotspotCatalog
 import app.smriti.ui.ActiveDialogue
 import app.smriti.ui.VoiceStatus
 import app.smriti.ui.components.BigButton
 import app.smriti.ui.components.GuidePortrait
+import app.smriti.ui.components.lineText
 import app.smriti.ui.components.Panel
 import app.smriti.ui.components.QuietButton
 import app.smriti.ui.components.SmritiIcons
@@ -87,7 +89,7 @@ fun Scrim(onDismiss: () -> Unit, content: @Composable () -> Unit) {
 }
 
 /** Consumes taps so clicks inside a panel do not reach the scrim. */
-private fun Modifier.blockTaps() = this.clickable(interactionSource = MutableInteractionSource(), indication = null) {}
+fun Modifier.blockTaps() = this.clickable(interactionSource = MutableInteractionSource(), indication = null) {}
 
 // ---------------------------------------------------------------- guide
 
@@ -119,8 +121,7 @@ fun GuidePanel(scene: SceneId, showNames: Boolean, onAction: (GameAction) -> Uni
                     // The same actions as the picture, as a plain list: an alternative to finding objects in the art.
                     Text(stringResource(R.string.guide_places_here), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 6.dp))
                     hotspots.forEach { spec ->
-                        val soon = spec.action is GameAction.NotYetAvailable
-                        val label = stringResource(spec.label) + if (soon) " · " + stringResource(R.string.hotspot_coming_later) else ""
+                        val label = spec.number?.let { "${stringResource(spec.label)} $it" } ?: stringResource(spec.label)
                         QuietButton(label, {
                             onAction(GameAction.CloseGuide)
                             onAction(spec.action)
@@ -148,11 +149,11 @@ fun GuidePanel(scene: SceneId, showNames: Boolean, onAction: (GameAction) -> Uni
 fun DialoguePanel(dialogue: ActiveDialogue, speaking: Boolean, onAction: (GameAction) -> Unit, modifier: Modifier = Modifier) {
     Panel(modifier.widthIn(max = 640.dp).testTag("dialogue_panel")) {
         Row(verticalAlignment = Alignment.Top) {
-            GuidePortrait(speaking = speaking, size = 64.dp)
+            GuidePortrait(speaking = speaking, size = 64.dp, portrait = dialogue.line.speaker.portrait)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.guide_name), style = MaterialTheme.typography.labelMedium, color = SmritiColors.InkSoft)
-                Text(stringResource(dialogue.line.text), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("dialogue_text"))
+                Text(stringResource(dialogue.line.speaker.label), style = MaterialTheme.typography.labelMedium, color = SmritiColors.InkSoft)
+                Text(lineText(dialogue.line), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("dialogue_text"))
                 val note = when (dialogue.voice) {
                     VoiceStatus.UNAVAILABLE -> R.string.voice_unavailable_note
                     VoiceStatus.OFF -> R.string.voice_off_note
@@ -184,12 +185,17 @@ fun DialoguePanel(dialogue: ActiveDialogue, speaking: Boolean, onAction: (GameAc
 @Composable
 fun DestinationChooser(onAction: (GameAction) -> Unit) {
     Scrim(onDismiss = { onAction(GameAction.CloseDestinationChooser) }) {
-        Panel(Modifier.widthIn(max = 760.dp).blockTaps().verticalScroll(rememberScrollState()).testTag("destination_chooser")) {
+        Panel(Modifier.widthIn(max = 1000.dp).blockTaps().verticalScroll(rememberScrollState()).testTag("destination_chooser")) {
             Text(stringResource(R.string.destination_title), style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(16.dp))
             BoxWithConstraints {
-                val wide = maxWidth > 520.dp
+                val wide = maxWidth > 760.dp
                 val cards: @Composable (Modifier) -> Unit = { m ->
+                    DestinationCard(
+                        stringResource(R.string.destination_market), "scenes/market_land.webp",
+                        { onAction(GameAction.CloseDestinationChooser); onAction(GameAction.PlanTrip(TripDirection.TO_MARKET)) },
+                        m.testTag("destination_market"),
+                    )
                     DestinationCard(
                         stringResource(R.string.destination_outside), "scenes/exterior_land.webp",
                         { onAction(GameAction.CloseDestinationChooser); onAction(GameAction.GoTo(SceneId.EXTERIOR)) },

@@ -33,13 +33,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import app.smriti.R
 import app.smriti.data.LayoutVariant
 import app.smriti.data.SceneLayout
 import app.smriti.data.SceneLayoutSource
@@ -75,6 +76,12 @@ fun IllustratedScene(
     showNames: Boolean,
     onAction: (GameAction) -> Unit,
     modifier: Modifier = Modifier,
+    /** Extra space to keep clear below the HUD for a panel drawn over this scene (e.g. the bus cue). */
+    extraTop: Dp = 0.dp,
+    /** Hotspot the Guide is pointing at (a hint); drawn with a strong, steady ring (no blinking). */
+    highlight: String? = null,
+    /** Extra drawing anchored to hotspots (e.g. made items on the sewing rack), in screen pixels. */
+    decorations: @Composable BoxScope.(rects: Map<String, PxRect>) -> Unit = {},
     /** Floating controls (Guide, music) drawn over the scene; told which bottom corner is free of hotspots. */
     corners: @Composable BoxScope.(guideOnRight: Boolean) -> Unit = {},
 ) {
@@ -91,7 +98,7 @@ fun IllustratedScene(
         val hudPx = with(density) { (if (maxWidth < 600.dp) NARROW_HUD_DP else HUD_DP).dp.toPx() }
         val insets = Insets(
             left = bars.getLeft(density, LayoutDirection.Ltr).toFloat(),
-            top = bars.getTop(density) + hudPx,
+            top = bars.getTop(density) + hudPx + with(density) { extraTop.toPx() },
             right = bars.getRight(density, LayoutDirection.Ltr).toFloat(),
             // The gesture-navigation strip still receives taps, so it is not reserved.
             bottom = 0f,
@@ -104,14 +111,15 @@ fun IllustratedScene(
         layout.hotspots.forEach { hs ->
             val spec = HotspotCatalog.find(scene, hs.id) ?: return@forEach
             val r = ensureMinSize(frame.map(hs.rect), minTouch)
-            val label = stringResource(spec.label)
-            val comingLater = spec.action is GameAction.NotYetAvailable
+            val label = spec.number?.let { "${stringResource(spec.label)} $it" } ?: stringResource(spec.label)
             val shape = RoundedCornerShape(18.dp)
+            val lit = highlight == hs.id
             Box(
                 Modifier
                     .offset { IntOffset(r.left.roundToInt(), r.top.roundToInt()) }
                     .requiredSize(with(density) { DpSize(r.width.toDp(), r.height.toDp()) })
-                    .border(3.dp, SmritiColors.HotspotRing.copy(alpha = if (showNames) 0.95f else 0.7f), shape)
+                    .then(if (lit) Modifier.border(7.dp, SmritiColors.Brass, shape) else Modifier)
+                    .border(3.dp, SmritiColors.HotspotRing.copy(alpha = if (showNames || lit) 0.95f else 0.7f), shape)
                     .background(Color.White.copy(alpha = if (showNames) 0.14f else 0.06f), shape)
                     .clickable(role = Role.Button, onClickLabel = label) { onAction(spec.action) }
                     .semantics {
@@ -121,10 +129,20 @@ fun IllustratedScene(
                     .testTag("hotspot_${hs.id}"),
                 contentAlignment = Alignment.BottomCenter,
             ) {
-                if (showNames) {
-                    val text = if (comingLater) "$label · ${stringResource(R.string.hotspot_coming_later)}" else label
+                spec.number?.let { n ->
+                    // Bus number boards: the art is blank; the number is real text, large and high-contrast.
                     Text(
-                        text,
+                        n.toString(),
+                        modifier = Modifier.align(Alignment.TopCenter).padding(top = with(density) { (r.height * 0.045f).toDp() }),
+                        color = Color(0xFFFFE27A),
+                        fontSize = with(density) { (r.height * 0.13f).toSp() },
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                    )
+                }
+                if (showNames && spec.number == null) {
+                    Text(
+                        label,
                         // The name may be wider than a narrow doorway; let it extend past the outline.
                         modifier = Modifier
                             .wrapContentWidth(unbounded = true)
@@ -145,6 +163,7 @@ fun IllustratedScene(
         val guideW = with(density) { GUIDE_CORNER_W_DP.dp.toPx() }
         val guideH = with(density) { GUIDE_CORNER_H_DP.dp.toPx() } + bars.getBottom(density)
         val mapped = layout.hotspots.map { frame.map(it.rect) }
+        decorations(layout.hotspots.associate { it.id to frame.map(it.rect) })
         val leftCorner = PxRect(0f, hPx - guideH, guideW, hPx)
         val rightCorner = PxRect(wPx - guideW, hPx - guideH, wPx, hPx)
         val guideOnRight = mapped.any { it.intersects(leftCorner) } && mapped.none { it.intersects(rightCorner) }
