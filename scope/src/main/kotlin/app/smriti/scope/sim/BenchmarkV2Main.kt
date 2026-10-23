@@ -160,6 +160,9 @@ private fun tune(propsOut: File, reportOut: File) {
     props["B1.k"] = chosenK.getValue(false).toString(); props["B1.w"] = chosenRule.getValue(false).toString()
     props["B1F.k"] = chosenK.getValue(true).toString(); props["B1F.w"] = chosenRule.getValue(true).toString()
     props["primary"] = primary
+    // Reported but NOT gated: the B1F setting with the highest development gain regardless of harm.
+    val maxGain = ruleDec.getValue(true).entries.maxBy { it.value.meanGain }.key
+    props["B1F.maxgain.k"] = maxGain.first.toString(); props["B1F.maxgain.w"] = maxGain.second.toString()
     propsOut.parentFile?.mkdirs()
     propsOut.outputStream().use { props.store(it, "SCOPE v2 frozen policy, chosen on DEVELOPMENT seeds 1-40 only (do not edit by hand)") }
 
@@ -205,6 +208,7 @@ private fun test(propsIn: File, reportOut: File) {
     add("B1F-cal") { s -> RuleController(s, true, probScale = d("B1F.k"), manualMargin = d("B1F.w"), label = "B1F-cal") }
     for ((fam, cfg) in V2.FAMILIES) add("$fam-v2") { s -> BayesController(s, cfg.copy(decision = DecisionRule.VersusManual(d("$fam.tau"), d("$fam.margin"))), label = "$fam-v2") }
     add("B3-v1rule") { s -> BayesController(s, ModelConfig.FULL_SCOPE, label = "B3-v1rule") }
+    add("B1F-maxgain(ungated)") { s -> RuleController(s, true, probScale = d("B1F.maxgain.k"), manualMargin = d("B1F.maxgain.w"), label = "B1F-maxgain(ungated)") }
     val prim = "$primary-v2"
 
     val sb = StringBuilder()

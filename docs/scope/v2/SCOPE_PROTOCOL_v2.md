@@ -85,3 +85,8 @@ GO only if **all** of the following hold for the primary SCOPE model:
 | **G5 stability** | Switching rate on P2 ≤ that of B1 and B1F + 0.05 |
 
 **If any gate fails, the verdict is NO-GO.** The thresholds above will not be changed after seeing held-out results. SCOPE stays disabled by default either way.
+
+## Addendum (before the held-out run, after seeing development tuning only)
+
+On development data no rule setting met the 5% harm limit: B1 at w = 3 never proposes, and B1F took its most conservative setting. For transparency, the held-out report also includes **B1F-maxgain (ungated)**: the B1F setting with the highest development gain regardless of harm. It is reported for context only and **does not change any gate**.
+
