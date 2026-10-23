@@ -171,6 +171,16 @@ data class Metrics(
     val regretNoAbstain: Double,
     /** (predicted q, true p*) pairs for calibration buckets. */
     val calibration: List<Pair<Double, Double>>,
+    // ---- v2 metrics (added later; do not change any v1 value) ----
+    /** Mean over contexts of (u(effective) − u(manual)) / (u_max − u_min); 0 when abstaining. */
+    val utilityGain: Double = Double.NaN,
+    val proposals: Int = 0,
+    /** Proposals whose true utility is below the manual variant's (the simulated person would override). */
+    val harmfulProposals: Int = 0,
+    val contexts: Int = 0,
+    /** Expected Brier score on held-out pairs: p*(1−q)² + (1−p*)q². */
+    val heldoutBrier: Double = Double.NaN,
+    val skips: Int = 0,
 )
 
 typealias ControllerFactory = (VariantSchema) -> Controller
@@ -197,6 +207,7 @@ object Simulator {
         val preLL = names.associateWith { ArrayList<Double>() }
         val preBrier = names.associateWith { ArrayList<Double>() }
         val asked = names.associateWith { intArrayOf(0) }
+        val skipped = names.associateWith { intArrayOf(0) }
         val labelled = names.associateWith { intArrayOf(0) }
         val switches = names.associateWith { intArrayOf(0, 0) }
         val lastRec = names.associateWith { HashMap<ContextSnapshot, VariantId>() }
@@ -228,6 +239,7 @@ object Simulator {
                     val tr = catalogue.truthOf(right.variantId)
                     val respRng = Rng(seed * 31337 + t * 977 + (left.variantId.value + "|" + right.variantId.value).hashCode())
                     val resp = person.respond(tl, tr, ctx, t, respRng)
+                    if (resp is ExplicitPreferenceResponse.Skip) skipped.getValue(n)[0]++
                     if (resp is ExplicitPreferenceResponse.PreferLeft || resp is ExplicitPreferenceResponse.PreferRight) {
                         val q = c.probLeft(ctx, left, right).coerceIn(1e-6, 1 - 1e-6)
                         val y = if (resp is ExplicitPreferenceResponse.PreferLeft) 1.0 else 0.0
@@ -259,6 +271,7 @@ object Simulator {
                         labelledSoFar = labelled.getValue(n)[0],
                         asked = asked.getValue(n)[0],
                         switchRate = switches.getValue(n).let { if (it[1] == 0) 0.0 else it[0].toDouble() / it[1] },
+                        skips = skipped.getValue(n)[0],
                     )
                 }
             }
@@ -274,6 +287,7 @@ object Simulator {
         var agree = 0.0
         var regret = 0.0; var regretN = 0
         var regretTop = 0.0
+        var gain = 0.0; var proposals = 0; var harmful = 0; var brier = 0.0
         var abstain = 0
         val calib = ArrayList<Pair<Double, Double>>()
         for (act in Protocol.ACTIVITIES) for (mode in SocialMode.entries) {
@@ -285,6 +299,7 @@ object Simulator {
                 val q = c.probLeft(ctx, view[i], view[j]).coerceIn(1e-6, 1 - 1e-6)
                 val loss = -(p * ln(q) + (1 - p) * ln(1 - q))
                 ce += loss; ceN++
+                brier += p * (1 - q) * (1 - q) + (1 - p) * q * q
                 if (cat.isUnseen(view[i].variantId) || cat.isUnseen(view[j].variantId)) { ceU += loss; ceUN++ }
                 agree += if (q == 0.5) 0.5 else if ((q > 0.5) == (p > 0.5)) 1.0 else 0.0
                 calib += q to p
@@ -294,13 +309,32 @@ object Simulator {
             val k = view.indexOfFirst { it.variantId == rec.effectiveVariant }
             val max = u.max(); val min = u.min()
             val kt = view.indexOfFirst { it.variantId == c.topRanked(ctx, view) }
+            val km = view.indexOfFirst { it.variantId == cat.schema.manualDefaults.getValue(act) }
+            if (rec is Recommendation.Propose) {
+                proposals++
+                if (u[k] < u[km]) harmful++
+            }
+            if (u.max() - u.min() > 1e-9) gain += (u[k] - u[km]) / (u.max() - u.min())
             if (max - min > 1e-9) {
                 regret += (max - u[k]) / (max - min); regretN++
                 regretTop += (max - u[kt]) / (max - min)
             }
         }
         val contexts = Protocol.ACTIVITIES.size * SocialMode.entries.size
-        return Metrics(ce / ceN, ceU / ceUN, agree / ceN, regret / regretN, abstain.toDouble() / contexts, Double.NaN, Double.NaN, 0, 0, 0.0, regretTop / regretN, calib)
+        return Metrics(
+            ce / ceN, ceU / ceUN, agree / ceN, regret / regretN, abstain.toDouble() / contexts, Double.NaN, Double.NaN, 0, 0, 0.0, regretTop / regretN, calib,
+            utilityGain = gain / contexts, proposals = proposals, harmfulProposals = harmful, contexts = contexts, heldoutBrier = brier / ceN,
+        )
+    }
+
+    /** Paired bootstrap of the mean difference (cand − base). Returns (point, low95, high95). */
+    fun pairedBootstrapDiff(base: DoubleArray, cand: DoubleArray, resamples: Int = Protocol.BOOTSTRAP_RESAMPLES, seed: Long = Protocol.BOOTSTRAP_SEED): Triple<Double, Double, Double> {
+        val n = base.size
+        fun d(idx: IntArray): Double { var s = 0.0; for (i in idx) s += cand[i] - base[i]; return s / idx.size }
+        val point = d(IntArray(n) { it })
+        val r = Rng(seed)
+        val stats = DoubleArray(resamples) { d(IntArray(n) { r.int(n) }) }.sorted()
+        return Triple(point, stats[(0.025 * resamples).toInt()], stats[(0.975 * resamples).toInt() - 1])
     }
 
     /** Paired bootstrap of the relative improvement (base − cand)/base in mean held-out CE. Returns (point, low95, high95). */

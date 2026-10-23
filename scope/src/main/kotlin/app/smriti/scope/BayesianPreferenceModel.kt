@@ -23,6 +23,19 @@ import kotlin.math.sqrt
  * Posterior: Laplace approximation (MAP by Newton's method + inverse Hessian covariance). This is an
  * approximation, not an exact posterior; calibration is reported by the simulator, not assumed.
  */
+/**
+ * How a proposal is decided.
+ * - [TopTwoPredictive] is the v1 rule (kept unchanged for reproducibility): pairwise PREDICTIVE choice
+ *   probability of best vs runner-up ≥ threshold. Diagnosed as structurally unreachable (docs/scope/v2/DIAGNOSIS.md).
+ * - [VersusManual] (v2): propose the posterior-mean best variant only if it is not the manual/accepted variant,
+ *   its posterior mean utility gain over manual is ≥ margin, and the POSTERIOR probability (parameter uncertainty
+ *   only) that the gain exceeds the margin is ≥ tau.
+ */
+sealed interface DecisionRule {
+    data class TopTwoPredictive(val threshold: Double = 0.70) : DecisionRule
+    data class VersusManual(val tau: Double, val margin: Double) : DecisionRule
+}
+
 data class ModelConfig(
     val name: String,
     val useContext: Boolean = true,
@@ -38,11 +51,15 @@ data class ModelConfig(
     val minInformationGain: Double = 0.03,
     /** Only pairs among the current top-K are decision-relevant enough to ask about. */
     val queryTopK: Int = 4,
+    /** v1 default kept so the original benchmark reproduces exactly. */
+    val decision: DecisionRule = DecisionRule.TopTwoPredictive(recommendConfidence),
 ) {
     companion object {
         val FULL_SCOPE = ModelConfig("B3-full-SCOPE")
         val NON_CONTEXTUAL = ModelConfig("B2-non-contextual", useContext = false, useActivityResiduals = false)
         val NO_POOLING = ModelConfig("B3-no-pooling", pooling = false, priorVarActivity = 1.0)
+        /** v2 simpler model: global weights + Solo/Together interaction, no activity residuals (8 parameters). */
+        val LITE = ModelConfig("B3-lite", useActivityResiduals = false)
     }
 }
 
@@ -67,6 +84,14 @@ fun socialSign(mode: SocialMode?): Double = when (mode) {
 }
 
 fun sigmoid(z: Double): Double = if (z >= 0) 1.0 / (1.0 + exp(-z)) else exp(z).let { it / (1.0 + it) }
+
+/** Standard normal CDF via erf (Abramowitz & Stegun 7.1.26, |error| < 1.5e-7). Deterministic. */
+fun normalCdf(x: Double): Double {
+    val z = abs(x) / sqrt(2.0)
+    val t = 1.0 / (1.0 + 0.3275911 * z)
+    val erf = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * exp(-z * z)
+    return if (x >= 0) 0.5 * (1.0 + erf) else 0.5 * (1.0 - erf)
+}
 
 /** Posterior summary for one candidate in one context. */
 data class PosteriorPrediction(
@@ -109,6 +134,15 @@ class LaplacePosterior internal constructor(
     fun probPrefer(context: ContextSnapshot, a: VariantFeatures, b: VariantFeatures): Double {
         val (m, v) = difference(context, a, b)
         return sigmoid(m / sqrt(1.0 + PI * v / 8.0))
+    }
+
+    /**
+     * POSTERIOR probability (parameter uncertainty only, no response noise) that u(a) − u(b) > margin:
+     * Φ((m − margin)/√v). This is what a "is a better than b?" decision should use.
+     */
+    fun probBetter(context: ContextSnapshot, a: VariantFeatures, b: VariantFeatures, margin: Double = 0.0): Double {
+        val (m, v) = difference(context, a, b)
+        return if (v <= 0.0) (if (m > margin) 1.0 else 0.0) else normalCdf((m - margin) / sqrt(v))
     }
 
     /**

@@ -69,8 +69,16 @@ class BayesController(schema: VariantSchema, config: ModelConfig, override val a
  * - B1F only: per-context majority "direction votes" per feature, applied as a heuristic score.
  * No fitted statistical model. Deterministic.
  */
-class RuleController(private val schema: VariantSchema, private val featureVotes: Boolean) : Controller {
-    override val name = if (featureVotes) "B1F-rules+feature-votes" else "B1-rules"
+class RuleController(
+    private val schema: VariantSchema,
+    private val featureVotes: Boolean,
+    /** Probability mapping scale (v1: 1.2 for variant score, 1.0 for feature score). Calibrated on dev in v2. */
+    private val probScale: Double = 1.0,
+    /** v2: propose only if the top score beats the manual variant's score by at least this. Null = v1 rule. */
+    private val manualMargin: Double? = null,
+    label: String? = null,
+) : Controller {
+    override val name = label ?: if (featureVotes) "B1F-rules+feature-votes" else "B1-rules"
 
     private data class Obs(val ctx: ContextSnapshot, val winner: VariantFeatures, val loser: VariantFeatures, val t: Int)
     private val history = ArrayList<Obs>()
@@ -146,7 +154,7 @@ class RuleController(private val schema: VariantSchema, private val featureVotes
         val vs = variantScores(obs)
         val dv = (vs[a.variantId] ?: 0.0) - (vs[b.variantId] ?: 0.0)
         val df = featureScore(ctx, a) - featureScore(ctx, b)
-        if (dv != 0.0 || df != 0.0) return sigmoid(1.2 * dv + 1.0 * df)
+        if (dv != 0.0 || df != 0.0) return sigmoid(probScale * (1.2 * dv + 1.0 * df))
         val dt = tableScore(ctx, a) - tableScore(ctx, b)
         return 0.5 + 0.1 * sign(dt)
     }
@@ -160,6 +168,12 @@ class RuleController(private val schema: VariantSchema, private val featureVotes
         val best = elig.sortedWith(compareByDescending<VariantFeatures> { total(it) }.thenByDescending { tableScore(ctx, it) }.thenBy { it.variantId.value }).firstOrNull()
             ?: return Recommendation.Abstain(AbstainReason.NO_CANDIDATES, fallback, emptyList())
         lastTop = best.variantId
+        if (manualMargin != null) {
+            val manual = elig.firstOrNull { it.variantId == fallback } ?: return Recommendation.Abstain(AbstainReason.NO_CANDIDATES, fallback, emptyList())
+            if (best.variantId == fallback) return Recommendation.Abstain(AbstainReason.ACCEPTED_IS_BEST, fallback, emptyList())
+            return if (total(best) - total(manual) >= manualMargin) Recommendation.Propose(best.variantId, 1.0, emptyList())
+            else Recommendation.Abstain(AbstainReason.UNCERTAIN, fallback, emptyList())
+        }
         return if (total(best) >= 1.0) Recommendation.Propose(best.variantId, 1.0, emptyList())
         else Recommendation.Abstain(AbstainReason.NO_EVIDENCE, fallback, emptyList())
     }

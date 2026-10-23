@@ -1,7 +1,7 @@
 package app.smriti.scope
 
 /** Why the engine declined to recommend; the caller then uses the fixed/manual variant. */
-enum class AbstainReason { DISABLED, NOT_OPTED_IN, NO_CANDIDATES, NO_EVIDENCE, UNCERTAIN, VERSION_MISMATCH, MODEL_FAILURE }
+enum class AbstainReason { DISABLED, NOT_OPTED_IN, NO_CANDIDATES, NO_EVIDENCE, UNCERTAIN, VERSION_MISMATCH, MODEL_FAILURE, ACCEPTED_IS_BEST }
 
 sealed interface Recommendation {
     /** A research proposal only: never applied automatically (annex §3.1 step 4). */
@@ -139,19 +139,39 @@ class ScopeEngine(
         }
     }
 
-    /** Recommendation logic without the enable/consent gates; used by the offline simulator. */
-    fun recommendUnchecked(context: ContextSnapshot, candidates: List<VariantFeatures>): Recommendation {
-        val fallback = manualFor(context)
+    /**
+     * Recommendation logic without the enable/consent gates; used by the offline simulator.
+     * [accepted] is the variant currently in use (defaults to the manual variant); v2 proposals must beat it.
+     */
+    fun recommendUnchecked(context: ContextSnapshot, candidates: List<VariantFeatures>, accepted: VariantId? = null): Recommendation =
+        recommendWith(config.decision, context, candidates, accepted)
+
+    /** Applies a given decision rule to the current posterior (used to score rules on identical posteriors). */
+    fun recommendWith(decision: DecisionRule, context: ContextSnapshot, candidates: List<VariantFeatures>, accepted: VariantId? = null): Recommendation {
+        val fallback = accepted ?: manualFor(context)
         val elig = eligible(context, candidates).eligible
         if (elig.size < 2) return Recommendation.Abstain(AbstainReason.NO_CANDIDATES, fallback, emptyList())
         val preds = elig.map { posterior.predict(context, it) }
         if (posterior.labelledComparisons == 0) return Recommendation.Abstain(AbstainReason.NO_EVIDENCE, fallback, preds)
         val order = elig.indices.sortedWith(compareByDescending<Int> { preds[it].expectedUtility }.thenBy { elig[it].variantId.value })
         val best = elig[order[0]]
-        val runner = elig[order[1]]
-        val conf = posterior.probPrefer(context, best, runner)
-        return if (conf >= config.recommendConfidence) Recommendation.Propose(best.variantId, conf, preds)
-        else Recommendation.Abstain(AbstainReason.UNCERTAIN, fallback, preds)
+        return when (val rule = decision) {
+            is DecisionRule.TopTwoPredictive -> {
+                val runner = elig[order[1]]
+                val conf = posterior.probPrefer(context, best, runner)
+                if (conf >= rule.threshold) Recommendation.Propose(best.variantId, conf, preds)
+                else Recommendation.Abstain(AbstainReason.UNCERTAIN, fallback, preds)
+            }
+            is DecisionRule.VersusManual -> {
+                val current = elig.firstOrNull { it.variantId == fallback }
+                    ?: return Recommendation.Abstain(AbstainReason.NO_CANDIDATES, fallback, preds)
+                if (best.variantId == current.variantId) return Recommendation.Abstain(AbstainReason.ACCEPTED_IS_BEST, fallback, preds)
+                val (m, _) = posterior.difference(context, best, current)
+                val pBetter = posterior.probBetter(context, best, current, rule.margin)
+                if (m >= rule.margin && pBetter >= rule.tau) Recommendation.Propose(best.variantId, pBetter, preds)
+                else Recommendation.Abstain(AbstainReason.UNCERTAIN, fallback, preds)
+            }
+        }
     }
 
     fun probPrefer(context: ContextSnapshot, a: VariantFeatures, b: VariantFeatures): Double = posterior.probPrefer(context, a, b)
