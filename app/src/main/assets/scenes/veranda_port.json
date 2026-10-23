@@ -1,0 +1,51 @@
+{
+  "scene": "veranda",
+  "variant": "port",
+  "image": "scenes/veranda_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0,
+    "top": 0.3508,
+    "right": 1.0,
+    "bottom": 0.8825
+  },
+  "hotspots": [
+    {
+      "id": "bedroom_door",
+      "rect": {
+        "left": 0.3074,
+        "top": 0.3675,
+        "right": 0.4981,
+        "bottom": 0.5158
+      }
+    },
+    {
+      "id": "kitchen_door",
+      "rect": {
+        "left": 0.5759,
+        "top": 0.3675,
+        "right": 0.7759,
+        "bottom": 0.5158
+      }
+    },
+    {
+      "id": "sewing_corner",
+      "rect": {
+        "left": 0.4704,
+        "top": 0.6458,
+        "right": 0.9926,
+        "bottom": 0.8658
+      }
+    },
+    {
+      "id": "front_door",
+      "rect": {
+        "left": 0.0333,
+        "top": 0.4667,
+        "right": 0.2995,
+        "bottom": 0.7542
+      }
+    }
+  ]
+}

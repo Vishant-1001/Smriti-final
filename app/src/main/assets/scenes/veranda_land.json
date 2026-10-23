@@ -1,0 +1,51 @@
+{
+  "scene": "veranda",
+  "variant": "land",
+  "image": "scenes/veranda_land.webp",
+  "width": 1920,
+  "height": 1080,
+  "safeArea": {
+    "left": 0.05,
+    "top": 0.2222,
+    "right": 0.7758,
+    "bottom": 0.787
+  },
+  "hotspots": [
+    {
+      "id": "bedroom_door",
+      "rect": {
+        "left": 0.2823,
+        "top": 0.2611,
+        "right": 0.3844,
+        "bottom": 0.563
+      }
+    },
+    {
+      "id": "kitchen_door",
+      "rect": {
+        "left": 0.4052,
+        "top": 0.2611,
+        "right": 0.5125,
+        "bottom": 0.563
+      }
+    },
+    {
+      "id": "sewing_corner",
+      "rect": {
+        "left": 0.5211,
+        "top": 0.2917,
+        "right": 0.7549,
+        "bottom": 0.681
+      }
+    },
+    {
+      "id": "front_door",
+      "rect": {
+        "left": 0.0708,
+        "top": 0.2593,
+        "right": 0.2529,
+        "bottom": 0.75
+      }
+    }
+  ]
+}

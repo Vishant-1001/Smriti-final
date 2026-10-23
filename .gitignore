@@ -1,0 +1,46 @@
+# Gradle / build outputs
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+.kotlin/
+
+# Local machine configuration
+local.properties
+*.iml
+.idea/
+.DS_Store
+Thumbs.db
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing material and secrets — never commit
+*.jks
+*.keystore
+keystore.properties
+*.p12
+*.pem
+.env
+.env.*
+
+# Android Studio / IntelliJ temporary files
+*.swp
+*~
+
+# Art tool dependencies (reinstall with `npm ci` in art_source/tools)
+art_source/tools/node_modules/
+art_source/build/
+
+# Local-only user data exports (Memory Book photos, radio tracks) — never commit
+user_data/
+
+# Original build kit as handed over; its contents are preserved under docs/spec and art_source/reference_only
+SMRITI_FROM_SCRATCH_BUILD_KIT_v1.2_KOTLIN/
+
+# Raw Roborazzi recordings (large PNGs); compact WebP copies live in docs/screenshots/jvm
+docs/screenshots/roborazzi/
+
+# Python bytecode
+__pycache__/
+*.pyc

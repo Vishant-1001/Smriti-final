@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tamil (default language). DRAFT translation written during development; it has NOT been reviewed
+  by a native Tamil speaker or by people living with dementia. See docs/SAFETY_RISK_REGISTER.md.
+-->
+<resources>
+    <string name="app_name">ஸ்மிருதி</string>
+    <string name="title_name">ஸ்மிருதி</string>
+    <string name="title_tagline">உங்கள் வீடு, உங்கள் வேகத்தில்</string>
+
+    <string name="action_start">தொடங்கு</string>
+    <string name="action_back">பின்செல்</string>
+    <string name="action_home">வீடு</string>
+    <string name="action_end_session">இப்போது போதும்</string>
+    <string name="action_settings">அமைப்புகள்</string>
+    <string name="action_guide">வழிகாட்டி</string>
+    <string name="action_close">மூடு</string>
+
+    <string name="scene_title">தொடக்கம்</string>
+    <string name="scene_exterior">வீட்டின் முன்</string>
+    <string name="scene_veranda">தாழ்வாரம்</string>
+    <string name="scene_bedroom">படுக்கையறை</string>
+    <string name="scene_memory_book">நினைவுப் புத்தகம்</string>
+    <string name="scene_radio">வானொலி</string>
+    <string name="scene_caregiver">பராமரிப்பாளர் கருவிகள்</string>
+
+    <string name="hotspot_front_door_enter">முன் கதவு: உள்ளே செல்</string>
+    <string name="hotspot_bedroom">படுக்கையறை</string>
+    <string name="hotspot_kitchen">சமையலறை</string>
+    <string name="hotspot_sewing">தையல் மூலை</string>
+    <string name="hotspot_front_door">முன் கதவு</string>
+    <string name="hotspot_memory_book">நினைவுப் புத்தகம்</string>
+    <string name="hotspot_radio">வானொலி</string>
+    <string name="hotspot_coming_later">பின்னர் வரும்</string>
+
+    <string name="guide_panel_title">நான் எப்படி உதவலாம்?</string>
+    <string name="guide_help_here">இந்த இடத்தைப் பற்றி உதவி</string>
+    <string name="guide_repeat">மீண்டும் சொல்</string>
+    <string name="guide_show_names">தொடக்கூடியவற்றைக் காட்டு</string>
+    <string name="guide_hide_names">பெயர்களை மறை</string>
+    <string name="guide_places_here">இங்குள்ள இடங்கள்</string>
+    <string name="guide_name">வழிகாட்டி</string>
+    <string name="guide_help_title">வணக்கம். தயாரானதும் \'தொடங்கு\' என்பதை அழுத்துங்கள்.</string>
+    <string name="guide_help_exterior">இது உங்கள் வீடு. உள்ளே செல்ல முன் கதவைத் தொடுங்கள்.</string>
+    <string name="guide_help_veranda">இது தாழ்வாரம். படுக்கையறை, சமையலறை, தையல் மூலை இங்கே உள்ளன. முன் கதவு இடது பக்கம் உள்ளது.</string>
+    <string name="guide_help_bedroom">இங்கே நினைவுப் புத்தகமும் வானொலியும் உள்ளன. விரும்பினால் ஏதாவது ஒன்றைத் தொடுங்கள்.</string>
+    <string name="guide_help_memory_book">பக்கங்களைத் திருப்ப அம்புக்குறிகளைப் பயன்படுத்துங்கள். எப்போது வேண்டுமானாலும் புத்தகத்தை மூடலாம்.</string>
+    <string name="guide_help_radio">கேட்க ஒரு பாடலைத் தேர்ந்தெடுங்கள். \'நிறுத்து\' பொத்தான் இசையை உடனே நிறுத்தும்.</string>
+    <string name="guide_help_caregiver">இவை குடும்பத்தினர் அல்லது பராமரிப்பாளருக்கான கருவிகள்.</string>
+    <string name="guide_kitchen_not_ready">இந்தப் பதிப்பில் சமையலறை இன்னும் தயாராகவில்லை. நீங்கள் படுக்கையறைக்குச் செல்லலாம்.</string>
+    <string name="guide_sewing_not_ready">இந்தப் பதிப்பில் தையல் மூலை இன்னும் தயாராகவில்லை. நீங்கள் படுக்கையறைக்குச் செல்லலாம்.</string>
+
+    <string name="dialogue_replay">மீண்டும் கேள்</string>
+    <string name="dialogue_stop_voice">குரலை நிறுத்து</string>
+    <string name="dialogue_ok">சரி</string>
+    <string name="voice_unavailable_note">இந்தச் சாதனத்தில் குரல் கிடைக்கவில்லை. சொற்கள் இங்கே காட்டப்படுகின்றன.</string>
+    <string name="voice_off_note">அமைப்புகளில் வழிகாட்டி குரல் அணைக்கப்பட்டுள்ளது.</string>
+
+    <string name="destination_title">எங்கே செல்ல விரும்புகிறீர்கள்?</string>
+    <string name="destination_outside">வீட்டின் முன்பக்கம் வெளியே செல்</string>
+    <string name="destination_stay">வீட்டிலேயே இரு</string>
+
+    <string name="memory_previous">முந்தைய பக்கம்</string>
+    <string name="memory_next">அடுத்த பக்கம்</string>
+    <string name="memory_read_aloud">சத்தமாகப் படி</string>
+    <string name="memory_sample_badge">மாதிரிப் பக்கம்</string>
+    <string name="memory_personal_badge">உங்கள் பக்கம்</string>
+    <string name="memory_sample_note">இது ஒரு மாதிரிப் பக்கம். குடும்பத்தினர் அல்லது பராமரிப்பாளர் உங்கள் சொந்தப் பக்கங்களைச் சேர்க்கலாம்.</string>
+    <string name="memory_page_of">பக்கம் %1$d / %2$d</string>
+    <string name="memory_empty">இந்தப் புத்தகத்தில் இன்னும் பக்கங்கள் இல்லை. குடும்பத்தினர் அல்லது பராமரிப்பாளர் சேர்க்கலாம்.</string>
+    <string name="memory_photo_missing">இந்தப் பக்கத்தின் புகைப்படம் கிடைக்கவில்லை.</string>
+    <string name="memory_sample_kolam">காலையில் வாசலில் போட்ட கோலம்.</string>
+    <string name="memory_sample_coffee">எவர்சில்வர் டம்ளர், டபராவில் ஃபில்டர் காபி.</string>
+    <string name="memory_sample_jasmine">புதிய மல்லிகைப் பூச்சரம்.</string>
+
+    <string name="radio_play">இயக்கு</string>
+    <string name="radio_pause">இடைநிறுத்து</string>
+    <string name="radio_stop">நிறுத்து</string>
+    <string name="radio_next">அடுத்த பாடல்</string>
+    <string name="radio_not_now">இப்போது வேண்டாம்</string>
+    <string name="radio_choose">ஒரு பாடலைத் தேர்ந்தெடுங்கள்</string>
+    <string name="radio_status_playing">ஒலிக்கிறது</string>
+    <string name="radio_status_paused">இடைநிறுத்தப்பட்டது</string>
+    <string name="radio_status_stopped">நிறுத்தப்பட்டது</string>
+    <string name="radio_empty">இப்போது இயக்கப் பாடல்கள் இல்லை. குடும்பத்தினர் அல்லது பராமரிப்பாளர் பாடல்களைச் சேர்க்கலாம்.</string>
+    <string name="radio_unavailable">அந்தப் பாடலை இயக்க முடியவில்லை. வேறொன்றைத் தேர்ந்தெடுக்கலாம்.</string>
+    <string name="radio_demo_1">மாதிரி இசை 1</string>
+    <string name="radio_demo_2">மாதிரி இசை 2</string>
+    <string name="radio_demo_badge">சோதனை ஒலி</string>
+    <string name="radio_skipped_count">இப்போதைக்குத் தவிர்த்தவை: %1$d</string>
+    <string name="radio_volume">இசை ஒலியளவு</string>
+    <string name="mini_player_music">இசை</string>
+
+    <string name="settings_title">அமைப்புகள்</string>
+    <string name="settings_language">மொழி</string>
+    <string name="lang_tamil">தமிழ்</string>
+    <string name="lang_english">English</string>
+    <string name="settings_text_size">எழுத்து அளவு</string>
+    <string name="text_normal">சாதாரணம்</string>
+    <string name="text_large">பெரியது</string>
+    <string name="text_larger">மிகப் பெரியது</string>
+    <string name="settings_narration">வழிகாட்டி குரல்</string>
+    <string name="settings_narration_volume">வழிகாட்டி குரல் ஒலியளவு</string>
+    <string name="settings_music_volume">இசை ஒலியளவு</string>
+    <string name="settings_music_mute">இசையை அமைதியாக்கு</string>
+    <string name="settings_reduced_motion">அசைவைக் குறை</string>
+    <string name="settings_always_names">இடங்களின் பெயர்களை எப்போதும் காட்டு</string>
+    <string name="settings_caregiver">பராமரிப்பாளர் கருவிகள்</string>
+    <string name="voice_status_available">இந்தச் சாதனத்தில் குரல் உள்ளது.</string>
+    <string name="voice_status_unavailable">இந்த மொழிக்கு இந்தச் சாதனத்தில் குரல் இல்லை. சொற்கள் எப்போதும் காட்டப்படும்.</string>
+    <string name="voice_status_checking">சாதனத்தில் குரல் உள்ளதா எனப் பார்க்கிறது…</string>
+
+    <string name="caregiver_gate_body">இந்தக் கருவிகள் நினைவுப் புத்தகத்தையும் வானொலிப் பாடல்களையும் மாற்றும். இவை குடும்பத்தினர் அல்லது பராமரிப்பாளருக்கானவை.</string>
+    <string name="caregiver_gate_continue">பராமரிப்பாளர் கருவிகளைத் திற</string>
+    <string name="caregiver_privacy">இங்குள்ள அனைத்தும் இந்தச் சாதனத்திலேயே இருக்கும். ஸ்மிருதிக்கு இணைய அணுகல் இல்லை; எதையும் எங்கும் அனுப்பாது. புகைப்படங்களும் பாடல்களும் ஸ்மிருதியின் தனிப்பட்ட சேமிப்பகத்தில் நகலெடுக்கப்படும்.</string>
+    <string name="caregiver_memory_header">நினைவுப் புத்தகப் பக்கங்கள்</string>
+    <string name="caregiver_add_page">ஒரு பக்கத்தைச் சேர்</string>
+    <string name="caregiver_caption">குறிப்பு</string>
+    <string name="caregiver_choose_photo">புகைப்படத்தைத் தேர்ந்தெடு (விருப்பம்)</string>
+    <string name="caregiver_photo_chosen">புகைப்படம் தேர்ந்தெடுக்கப்பட்டது</string>
+    <string name="caregiver_save">சேமி</string>
+    <string name="caregiver_edit">குறிப்பைத் திருத்து</string>
+    <string name="caregiver_delete">நீக்கு</string>
+    <string name="caregiver_cancel">ரத்து</string>
+    <string name="caregiver_delete_page_title">இந்தப் பக்கத்தை நீக்கவா?</string>
+    <string name="caregiver_delete_page_body">பக்கமும் அதன் புகைப்படமும் இந்தச் சாதனத்திலிருந்து நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</string>
+    <string name="caregiver_remove_samples">மாதிரிப் பக்கங்களை நீக்கு</string>
+    <string name="caregiver_restore_samples">மாதிரிப் பக்கங்களை மீண்டும் காட்டு</string>
+    <string name="caregiver_sample_label">மாதிரி: %1$s</string>
+    <string name="caregiver_radio_header">வானொலிப் பாடல்கள்</string>
+    <string name="caregiver_add_song">இந்தச் சாதனத்திலிருந்து ஒரு பாடலைச் சேர்</string>
+    <string name="caregiver_song_rights">பயன்படுத்த உரிமையுள்ள இசையை மட்டும் சேர்க்கவும். பாடல்கள் இந்தச் சாதனத்தில் சேமிக்கப்பட்டிருக்க வேண்டும்; இணைய இணைப்புகள் ஆதரிக்கப்படாது.</string>
+    <string name="caregiver_remove_song">நீக்கு</string>
+    <string name="caregiver_remove_song_title">இந்தப் பாடலை நீக்கவா?</string>
+    <string name="caregiver_remove_song_body">பாடல் ஸ்மிருதியின் பட்டியலிலிருந்து நீக்கப்படும்; அதன் நகல் ஸ்மிருதியின் சேமிப்பகத்திலிருந்து அழிக்கப்படும்.</string>
+    <string name="caregiver_restore_demo">மாதிரி இசைகளை மீண்டும் சேர்</string>
+    <string name="caregiver_import_failed">அந்தக் கோப்பைச் சேர்க்க முடியவில்லை.</string>
+    <string name="caregiver_no_pages">பக்கங்கள் இல்லை.</string>
+</resources>

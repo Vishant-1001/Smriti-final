@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English (fallback). Tamil is the default language in Settings; see values-ta/strings.xml. -->
+<resources>
+    <string name="app_name">SMRITI</string>
+    <string name="title_name">SMRITI</string>
+    <string name="title_tagline">Your home, at your own pace</string>
+
+    <!-- Global actions -->
+    <string name="action_start">Start</string>
+    <string name="action_back">Back</string>
+    <string name="action_home">Home</string>
+    <string name="action_end_session">End for now</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_guide">Guide</string>
+    <string name="action_close">Close</string>
+
+    <!-- Scene names -->
+    <string name="scene_title">Start</string>
+    <string name="scene_exterior">In front of the house</string>
+    <string name="scene_veranda">Veranda</string>
+    <string name="scene_bedroom">Bedroom</string>
+    <string name="scene_memory_book">Memory Book</string>
+    <string name="scene_radio">Radio</string>
+    <string name="scene_caregiver">Caregiver tools</string>
+
+    <!-- Hotspots -->
+    <string name="hotspot_front_door_enter">Front door: go inside</string>
+    <string name="hotspot_bedroom">Bedroom</string>
+    <string name="hotspot_kitchen">Kitchen</string>
+    <string name="hotspot_sewing">Sewing corner</string>
+    <string name="hotspot_front_door">Front door</string>
+    <string name="hotspot_memory_book">Memory Book</string>
+    <string name="hotspot_radio">Radio</string>
+    <string name="hotspot_coming_later">coming later</string>
+
+    <!-- Guide -->
+    <string name="guide_panel_title">How can I help?</string>
+    <string name="guide_help_here">Help with this place</string>
+    <string name="guide_repeat">Say it again</string>
+    <string name="guide_show_names">Show what I can tap</string>
+    <string name="guide_hide_names">Hide the names</string>
+    <string name="guide_places_here">Places here</string>
+    <string name="guide_name">Guide</string>
+    <string name="guide_help_title">Welcome. Press Start whenever you are ready.</string>
+    <string name="guide_help_exterior">This is your home. Tap the front door to go inside.</string>
+    <string name="guide_help_veranda">This is the veranda. The bedroom, the kitchen and the sewing corner are here. The front door is on the left.</string>
+    <string name="guide_help_bedroom">Here are the Memory Book and the radio. Tap either one if you like.</string>
+    <string name="guide_help_memory_book">Use the arrows to turn the pages. You can close the book at any time.</string>
+    <string name="guide_help_radio">Choose a song to listen to. The Stop button stops the music straight away.</string>
+    <string name="guide_help_caregiver">These are tools for a family member or carer.</string>
+    <string name="guide_kitchen_not_ready">The kitchen is not ready yet in this version. You can visit the bedroom.</string>
+    <string name="guide_sewing_not_ready">The sewing corner is not ready yet in this version. You can visit the bedroom.</string>
+
+    <!-- Dialogue panel -->
+    <string name="dialogue_replay">Replay</string>
+    <string name="dialogue_stop_voice">Stop voice</string>
+    <string name="dialogue_ok">OK</string>
+    <string name="voice_unavailable_note">Spoken voice is not available on this device. The words are shown here.</string>
+    <string name="voice_off_note">The Guide voice is turned off in Settings.</string>
+
+    <!-- Destination chooser -->
+    <string name="destination_title">Where would you like to go?</string>
+    <string name="destination_outside">Go outside to the front of the house</string>
+    <string name="destination_stay">Stay home</string>
+
+    <!-- Memory Book -->
+    <string name="memory_previous">Previous page</string>
+    <string name="memory_next">Next page</string>
+    <string name="memory_read_aloud">Read aloud</string>
+    <string name="memory_sample_badge">Sample page</string>
+    <string name="memory_personal_badge">Your page</string>
+    <string name="memory_sample_note">This is a sample page. A family member or carer can add your own pages.</string>
+    <string name="memory_page_of">Page %1$d of %2$d</string>
+    <string name="memory_empty">This book has no pages yet. A family member or carer can add some.</string>
+    <string name="memory_photo_missing">The photo for this page could not be found.</string>
+    <string name="memory_sample_kolam">A kolam drawn at the doorstep in the morning.</string>
+    <string name="memory_sample_coffee">Filter coffee in a steel tumbler and davara.</string>
+    <string name="memory_sample_jasmine">A string of fresh jasmine flowers.</string>
+
+    <!-- Radio -->
+    <string name="radio_play">Play</string>
+    <string name="radio_pause">Pause</string>
+    <string name="radio_stop">Stop</string>
+    <string name="radio_next">Next song</string>
+    <string name="radio_not_now">Not now</string>
+    <string name="radio_choose">Choose a song</string>
+    <string name="radio_status_playing">Playing</string>
+    <string name="radio_status_paused">Paused</string>
+    <string name="radio_status_stopped">Stopped</string>
+    <string name="radio_empty">There are no songs to play right now. A family member or carer can add songs.</string>
+    <string name="radio_unavailable">That song could not be played. You can choose another one.</string>
+    <string name="radio_demo_1">Demo tune 1</string>
+    <string name="radio_demo_2">Demo tune 2</string>
+    <string name="radio_demo_badge">test sound</string>
+    <string name="radio_skipped_count">Skipped for now: %1$d</string>
+    <string name="radio_volume">Music volume</string>
+    <string name="mini_player_music">Music</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="lang_tamil">தமிழ்</string>
+    <string name="lang_english">English</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="text_normal">Normal</string>
+    <string name="text_large">Large</string>
+    <string name="text_larger">Larger</string>
+    <string name="settings_narration">Guide voice</string>
+    <string name="settings_narration_volume">Guide voice volume</string>
+    <string name="settings_music_volume">Music volume</string>
+    <string name="settings_music_mute">Mute music</string>
+    <string name="settings_reduced_motion">Reduce motion</string>
+    <string name="settings_always_names">Always show names of places</string>
+    <string name="settings_caregiver">Caregiver tools</string>
+    <string name="voice_status_available">Voice is available on this device.</string>
+    <string name="voice_status_unavailable">Voice is not available on this device for this language. Words are always shown.</string>
+    <string name="voice_status_checking">Checking for a voice on this device…</string>
+
+    <!-- Caregiver tools -->
+    <string name="caregiver_gate_body">These tools change the Memory Book and the radio songs. They are meant for a family member or carer.</string>
+    <string name="caregiver_gate_continue">Open caregiver tools</string>
+    <string name="caregiver_privacy">Everything here stays on this device. SMRITI has no internet access and sends nothing anywhere. Photos and songs are copied into SMRITI\'s private storage.</string>
+    <string name="caregiver_memory_header">Memory Book pages</string>
+    <string name="caregiver_add_page">Add a page</string>
+    <string name="caregiver_caption">Caption</string>
+    <string name="caregiver_choose_photo">Choose a photo (optional)</string>
+    <string name="caregiver_photo_chosen">Photo chosen</string>
+    <string name="caregiver_save">Save</string>
+    <string name="caregiver_edit">Edit caption</string>
+    <string name="caregiver_delete">Delete</string>
+    <string name="caregiver_cancel">Cancel</string>
+    <string name="caregiver_delete_page_title">Delete this page?</string>
+    <string name="caregiver_delete_page_body">The page and its photo are removed from this device. This cannot be undone.</string>
+    <string name="caregiver_remove_samples">Remove sample pages</string>
+    <string name="caregiver_restore_samples">Show sample pages again</string>
+    <string name="caregiver_sample_label">Sample: %1$s</string>
+    <string name="caregiver_radio_header">Radio songs</string>
+    <string name="caregiver_add_song">Add a song from this device</string>
+    <string name="caregiver_song_rights">Only add music you have the right to use. Songs must be stored on this device; streaming links are not supported.</string>
+    <string name="caregiver_remove_song">Remove</string>
+    <string name="caregiver_remove_song_title">Remove this song?</string>
+    <string name="caregiver_remove_song_body">The song is removed from SMRITI\'s list and its copy is deleted from SMRITI\'s storage.</string>
+    <string name="caregiver_restore_demo">Add the demo tunes back</string>
+    <string name="caregiver_import_failed">That file could not be added.</string>
+    <string name="caregiver_no_pages">No pages.</string>
+</resources>

@@ -1,0 +1,33 @@
+{
+  "scene": "bedroom",
+  "variant": "port",
+  "image": "scenes/bedroom_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0278,
+    "top": 0.4917,
+    "right": 0.9722,
+    "bottom": 0.8833
+  },
+  "hotspots": [
+    {
+      "id": "memory_book",
+      "rect": {
+        "left": 0.144,
+        "top": 0.6051,
+        "right": 0.5412,
+        "bottom": 0.6876
+      }
+    },
+    {
+      "id": "radio",
+      "rect": {
+        "left": 0.5583,
+        "top": 0.5675,
+        "right": 0.8861,
+        "bottom": 0.6792
+      }
+    }
+  ]
+}

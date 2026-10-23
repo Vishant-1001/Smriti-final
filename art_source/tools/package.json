@@ -1,0 +1,8 @@
+{
+  "name": "smriti-art-tools",
+  "private": true,
+  "description": "Renders SMRITI's authored SVG art to PNG. Not part of the Android build.",
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2"
+  }
+}

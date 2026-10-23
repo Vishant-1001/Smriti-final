@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="smriti_cream">#FFF6E7C8</color>
+    <color name="smriti_terracotta">#FFC8643B</color>
+
+    <style name="Theme.Smriti" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/smriti_cream</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

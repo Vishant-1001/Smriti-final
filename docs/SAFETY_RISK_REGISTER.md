@@ -1,0 +1,23 @@
+# Safety risk register
+
+This is a development risk register, **not** a clinical safety case. Developer testing on emulators and the JVM is not clinical validation. SMRITI must not be tested with people living with dementia until there is appropriate expert review, a consent/assent process with clear dissent and stop procedures, and institutional ethics approval.
+
+Owner for every item until a team exists: project owner (repository maintainer).
+
+| # | Risk | Mitigation in M1 | Evidence | Status | Still unverified |
+|---|---|---|---|---|---|
+| 1 | Visual clutter / poor contrast | Few objects per scene, large and separated; one outline colour; hotspots outlined; UI text ≥ 4.5:1 on paper (ink ≈13:1, buttons ≈5.6:1 / 6.3:1) | Screenshots in `docs/screenshots/`; `SceneAssetsTest` (no overlaps) | Mitigated (prototype) | Real-world glare, low vision, colour-vision deficiency; no expert review |
+| 2 | Confusing navigation / unclear way back | Back, Home and Settings always at the top; scene name shown; Guide always present; hardware back closes overlays first; "Places here" list | `GameFlowUiTest.globalControlsAreOnEveryGameplayScreen`, `GameViewModelTest.back closes overlays…` | Mitigated | Comprehension by the intended users |
+| 3 | Long or unsolicited dialogue | Speech only when Help is pressed; one or two short lines; no NPC monologues; new speech replaces old; leaving a scene stops speech | `GameViewModelTest.help speaks only when asked…` | Mitigated | Tamil wording not reviewed by native speakers |
+| 4 | Distressing or unwanted music | No autoplay; Stop always visible (mini player outside the radio); "Not now" skips a song for the session; music pauses in the background; separate music volume and mute | `RadioSessionTest`, `GameFlowUiTest.radioDoesNotAutoplayAndStopWorks`, `SliceInstrumentedTest.fullSliceWithRealAudio` | Mitigated | Caregiver choice of songs is outside the app's control; no music-therapy claim |
+| 5 | Motion discomfort | Only a 350 ms cross-fade and the Guide's mouth frames; Reduced motion removes both | Code review; manual | Partly verified | No device test with Reduced motion on yet |
+| 6 | Inconsistent inventory / state | Single state holder; explicit radio state machine; save sanitised on load | `SaveCodecTest`, `RadioSessionTest`, `MemoryBookStateTest` | Mitigated for M1 scope | Shopping/cooking state machines not built (M2–M5) |
+| 7 | Payment interaction confusion | Not built (M5) | — | Open | — |
+| 8 | Hidden assessment / performance monitoring | No logging, timing or scoring anywhere; save schema has no such fields | `SaveCodecTest.save never contains performance data` | Mitigated | Must be re-checked whenever logging is proposed |
+| 9 | Cultural assumptions (stories, songs, clothing, home) | Generic, people-free sample pages; neutral household scenes; Guide design follows the atlases | `docs/ART_BIBLE.md` | **Open** | No Tamil cultural or community review yet; Tamil strings are an unreviewed draft |
+| 10 | Privacy loss from photos/audio | No internet permission; private storage; backup off; deletion removes files | `PRIVACY_AND_DATA.md`; manifest | Mitigated | Device-level threats (shared phones) are out of scope |
+| 11 | State loss on rotation / backgrounding | Save written through on every change; ViewModel survives rotation; restore after process death | `SliceInstrumentedTest.sceneSurvivesRotationAndRecreation`; manual force-stop and relaunch on the emulator restored the radio scene | Mitigated | Low-memory process kill not specifically tested |
+| 12 | Help / Stop / Exit inaccessible | HUD never covered by activities; hotspots kept below the HUD; Guide moves to whichever bottom corner is free; mini player placed above the Guide on narrow phones; "End for now" in the Guide panel and on the exterior | Screenshots at 320, 411, 914 and 1280 dp; UI tests | Mitigated | TalkBack and Switch Access not tested on a device |
+| 13 | Tamil voice unavailable offline | Subtitles always shown; the panel says honestly that no voice is available | Emulator: Google TTS had no installed Tamil voice; English embedded voice worked | **Open** | Whether target devices have offline Tamil voices; recorded Tamil narration not yet produced |
+| 14 | Prototype art misread as finished | Manifest marks every asset as `approved_for_prototype` | `docs/ASSET_MANIFEST.csv` | Tracked | Professional illustration pass pending |
+| 15 | Accidental caregiver changes | Caregiver tools only from Settings, behind an explanatory step; deletes ask for confirmation | `GameFlowUiTest.caregiverToolsAreBehindADeliberateStep` | Mitigated | The gate is deliberately not a test or PIN; whether that is enough needs caregiver feedback |

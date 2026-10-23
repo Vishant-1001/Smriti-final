@@ -1,0 +1,24 @@
+{
+  "scene": "exterior",
+  "variant": "port",
+  "image": "scenes/exterior_port.webp",
+  "width": 1080,
+  "height": 2400,
+  "safeArea": {
+    "left": 0.0278,
+    "top": 0.3375,
+    "right": 0.9722,
+    "bottom": 0.6896
+  },
+  "hotspots": [
+    {
+      "id": "front_door",
+      "rect": {
+        "left": 0.4102,
+        "top": 0.4575,
+        "right": 0.5898,
+        "bottom": 0.6029
+      }
+    }
+  ]
+}
